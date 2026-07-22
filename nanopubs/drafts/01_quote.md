@@ -35,10 +35,18 @@ Verbatim from the paper PDF in `paper/`. Character-for-character. ≤ 500 chars 
 > _Read the PDF first. Don't paraphrase from memory. See `docs/verify-before-drafting.md`._
 
 ```
-
+The turbidity product showed high consistency with in situ observations, proving the great capabilities of the MSI sensor to monitor this important water quality parameter. However, for the key parameter Chl-a further research is needed, with a more complete set of match-ups.
 ```
 
-Character count: ___ / 500.
+Character count: 276 / 500.
+
+**Verification record.** Source: `paper/sent-2021.pdf` (md5 `4effe616d9e054710712cf17797b26de`),
+Section 5 *Conclusions*, page 24 (footer reads `Remote Sens. 2021, 13, 1043 … 24 of 27`).
+Text extracted with `pdftotext -layout`; the sentence pair occurs **exactly once** in the
+extraction, so this is not the leftover peer-review text layer flagged in
+`00_paper_summary.md` § Notes. Line-wrap hyphenation was absent in this passage; the only
+normalisation applied was joining the extractor's line breaks into single spaces. All
+characters are ASCII — no ligatures, no en-dashes, and `Chl-a` uses a plain ASCII hyphen.
 
 <!-- field: quotation-end -->
 ### End of quotation (optional - use when quoting beginning and end of a longer passage, max. 500 characters) (textarea, optional)
@@ -46,6 +54,8 @@ Character count: ___ / 500.
 Only when quoting the beginning *and* end of a longer passage — set the mode above to
 **Quote start/end**, put the opening phrase under the previous heading and the closing
 phrase here. Leave empty for a single short quote.
+
+*(skip — optional; the quote is 276 chars, well within whole-text mode)*
 
 ```
 
@@ -57,8 +67,10 @@ phrase here. Leave empty for a single short quote.
 Why this quote matters and what the replication tests. Connect the paper's claim to the work this repo does. Don't repeat the quote.
 
 ```
-
+The abstract hedges; this sentence does not. It commits to a parameter-dependent verdict, and that is what decides whether Sentinel-2 MSI is operationally usable under the Water Framework Directive: a sensor trustworthy for one variable but not another is a different monitoring proposition from one that simply works. The verdict rests on 19 to 21 match-ups from a single estuary over two years, so it could equally reflect sample size, the atmospheric-correction processor selected, or local optical conditions. This replication re-runs the processing chain over the Sado estuary against an independent in situ reference — the original AQUASado match-ups are available only on request — and tests whether the same verdict emerges.
 ```
+
+Character count: 732 / 800.
 
 ## Publication note
 
