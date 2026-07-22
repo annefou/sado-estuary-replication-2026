@@ -130,6 +130,78 @@ Three designs survive. All are honest replications; they differ in what they can
 Option 1 stays closest to the original claim; option 2 gives far more statistical power;
 option 3 is the only route to a true Reproduction.
 
+## Second scan — European candidate sites (2026-07-22)
+
+Following the Sado result, the site is now selected **by data availability**, constrained to
+Europe and preferably a LifeWatch ERIC member state. The Scheldt / Westerschelde was scanned
+first: it is the closest typological analogue to the Sado (mesotidal, well-mixed, turbid,
+resuspension-dominated, strong inner→outer gradient) and it straddles the Netherlands and
+Belgium, both LifeWatch ERIC members.
+
+### Westerschelde (NL) — verified, and the recommended site
+
+Source: Rijkswaterstaat DDAPI 2.0, `https://ddapi20-waterwebservices.rijkswaterstaat.nl`.
+Open, no API key required. (The legacy `waterwebservices.rijkswaterstaat.nl` host is being
+decommissioned end of April 2026 — use the new base URL.)
+
+Catalogue: **56 monitoring sites** in the Westerschelde window (3.35–4.35 E, 51.30–51.58 N),
+of which 17 list turbidity, 55 chlorophyll and 22 suspended matter. Stations run the full
+estuary axis from Vlissingen at the mouth to Schaar van Ouden Doel at the Belgian border —
+the same inner/outer structure the Sado paper uses.
+
+**Catalogue capability was then checked against actual observations** (the trap Waterbase
+set), for March 2018 – March 2020, at six axis stations:
+
+| Quantity | Code | Records | Verdict |
+|---|---|---|---|
+| Chlorophyll-a | `CONCTTE` / `CHLFa`, µg/l | **274** (27–75 per station) | Usable |
+| Secchi depth | `ZICHT` | **238** | Usable (transparency proxy) |
+| Turbidity | `TROEBHD` | **0** | Absent in this period |
+| Light extinction | `EXTINCTE` | **0** | Absent at these stations |
+
+Two properties make the chlorophyll records genuinely usable rather than merely present:
+
+- **Timestamps are recorded**, not just dates. A large share fall in the 09:00–13:00 window,
+  bracketing the Sentinel-2 overpass, so the paper's ±2 h match-up rule can be applied
+  as-written rather than relaxed.
+- **~274 candidate samples against the paper's N = 19–21.** Roughly an order of magnitude
+  more, at six stations, before the other ~50 Westerschelde sites are even considered.
+
+Turbidity does appear at these stations from around 2024 (≈5 records per station-quarter), so
+a turbidity-bearing design is possible if the period moves to 2024+.
+
+### Other European candidates checked
+
+- **Belgian Part of the North Sea** (LifeWatch Belgium / VLIZ observatory area) — EMODnet
+  Chemistry returns 128 records in 2018, **943 in 2019, 605 in 2020**. Dense, and in a
+  well-studied turbid Case-2 water body. Chlorophyll only in that dataset — no turbidity.
+- **Oosterschelde** — 35 sites, 18 listing turbidity, 27 suspended matter. Not yet
+  observation-checked; the obvious second stop if the Westerschelde design needs turbidity.
+- **Wadden Sea / Ems-Dollard** — 69 and 24 sites; EMODnet returns almost nothing after 2018
+  for Ems-Dollard.
+
+### Consequence for the chain anchor
+
+`01_quote.md` quotes both limbs of the paper's asymmetry, but the AIDA must be atomic, and
+the plan recorded in `00_paper_summary.md` § Notes was to anchor on the **turbidity** limb as
+the stronger, more citable claim. The Westerschelde data does not support that limb for
+2018–2020.
+
+This is not a problem so much as a redirection, and arguably a better one. The second
+sentence of the quote reads: *"However, for the key parameter Chl-a further research is
+needed, with a more complete set of match-ups."* A replication carrying ~274 Chl-a match-ups
+against the original ~20 **is** the more complete set of match-ups the authors asked for. The
+already-verified verbatim quote supports this anchoring unchanged.
+
+Three ways forward, in preference order:
+
+1. **Westerschelde, anchor on the Chl-a limb, keep the 2018–2020 period.** Answers the
+   paper's own stated call. Turbidity limb left untested and declared as such.
+2. **Westerschelde, move the period to 2024+.** Recovers turbidity, loses the exact-period
+   correspondence with the original study.
+3. **Add the Oosterschelde or the Belgian coastal zone** as a second site to recover the
+   turbidity limb alongside the Westerschelde Chl-a limb.
+
 ## Reproducing this scan
 
 Queries were run against live APIs on the scan date. The GLORIA archive, the Waterbase
