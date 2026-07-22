@@ -22,7 +22,7 @@
 | EMODnet Chemistry (Eutrophication Atlantic) | **0 usable** | Ruled out | 23 records, but offshore, October 2018 only, night-time |
 | EEA Waterbase — Water Quality ICM 2026 | **0** | Ruled out | PT reports only rivers + lakes, nothing after 2014 |
 | Copernicus Marine in situ IBI NRT (013_033) | n/a | Ruled out | Product record starts 2020-01-01 |
-| SNIRH / APA | **unverified** | Open question | Host returns HTTP 403 from this machine |
+| SNIRH / APA | **no turbidity variable** | Ruled out for turbidity | Checked by hand by A. Fouilloux, 2026-07-22 |
 | AQUASado original match-ups | n/a | Request-only | Data Availability Statement, p. 25 |
 
 ## Per-source detail
@@ -86,20 +86,23 @@ and for naming water bodies in the Study draft) but no observations.
 **2020-01-01**, leaving at most a three-month overlap with the paper's window, and the
 product is coastal/shelf-oriented rather than estuarine.
 
-### SNIRH — the one open question
+### SNIRH — resolved by hand: no turbidity
 
 `snirh.apambiente.pt` returns **HTTP 403** to every request from this machine (plain curl,
-browser User-Agent, and the fetch tool alike — an nginx block, not a login wall), so this
-source could **not** be verified programmatically and is recorded as unresolved rather than
-negative.
+browser User-Agent, and the fetch tool alike — an nginx block, not a login wall), so it could
+not be verified programmatically.
 
-One piece of indirect evidence, from the paper itself: Sent et al. cite SNIRH exactly once,
-on p. 4, and only for **wind** — *"hourly average with a maximum of ~8 m/s in 2018 and ~6m/s
-in 2019, Source: https://snirh.apambiente.pt (accessed on 26 November 2020)"*. A group
-running a monthly in-estuary campaign for two years, who already had SNIRH open in a browser,
-did not draw water-quality data from it. That is suggestive, not conclusive.
+**Checked manually by A. Fouilloux on 2026-07-22: SNIRH does not expose a turbidity
+variable.** This confirms the indirect evidence from the paper itself — Sent et al. cite
+SNIRH exactly once, on p. 4, and only for **wind**: *"hourly average with a maximum of
+~8 m/s in 2018 and ~6m/s in 2019, Source: https://snirh.apambiente.pt (accessed on
+26 November 2020)"*. A group running a monthly in-estuary campaign for two years, already
+using the portal, did not draw water-quality data from it.
 
-**This is the one check a human should do by hand before the design is frozen.**
+Still open, and narrower: whether SNIRH carries **Sólidos Suspensos Totais** (SPM) or
+**Clorofila a** for the Sado transitional-water stations over 2018–2020. Those are two of the
+paper's four parameters, so a positive answer would make SNIRH partially usable even though
+the turbidity limb is dead.
 
 ## Consequence for the design choice
 
