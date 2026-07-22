@@ -2,13 +2,13 @@
 
 > This is a working scratchpad for the paper-analysis phase. The output of this file feeds the Quote / AIDA / Claim drafts. It is not itself a nanopub.
 
-**Reference paper:** {{PAPER_TITLE}}
+**Reference paper:** Deriving Water Quality Parameters Using Sentinel-2 Imagery: A Case Study in the Sado Estuary, Portugal
 
-**DOI:** {{PAPER_DOI}}
+**DOI:** 10.3390/rs13051043
 
 **Authors:** _add._
 
-**Year:** {{PAPER_YEAR}}
+**Year:** 2021
 
 ## Headline claim
 

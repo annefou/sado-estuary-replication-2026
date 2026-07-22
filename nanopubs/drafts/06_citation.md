@@ -38,7 +38,7 @@ For question-rooted chains where there is no original paper to confirm/dispute, 
 ##### DOI or other URL of the cited work (text input)
 
 ```
-https://doi.org/{{PAPER_DOI}}
+https://doi.org/10.3390/rs13051043
 ```
 
 #### Additional citations (optional)
