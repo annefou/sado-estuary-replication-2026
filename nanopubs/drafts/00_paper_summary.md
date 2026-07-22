@@ -98,6 +98,18 @@ Two open decisions, flagged rather than assumed (see "Notes" below): which indep
 in situ source to validate against, and whether to request the original AQUASado data
 from the corresponding author.
 
+**Update (2026-07-22) — the first decision has been scanned, see `00b_in_situ_source_scan.md`.**
+There is **no open, contemporaneous, in-estuary in situ dataset** for the Sado over
+March 2018 – March 2020. GLORIA has zero Portuguese records; EMODnet Chemistry has one
+October 2018 shelf cruise sampled at night, yielding zero possible match-ups; EEA Waterbase
+registers 19 transitional-water stations inside the estuary but Portugal reports no
+transitional-water chemistry at all; the Copernicus Marine in situ IBI product begins
+2020-01-01. SNIRH could not be reached (HTTP 403 from this host) and is the one source still
+to be checked by hand. The Replication-not-Reproduction choice therefore stands on firmer
+ground than written above — the blocker is not just that the original data are request-only,
+but that no open substitute exists. Three surviving designs are set out at the end of the
+scan note; the design choice is not yet frozen.
+
 ## Notes for downstream drafts
 
 - **The Quote must carry the asymmetry.** The paper's own abstract hedges ("useful …
