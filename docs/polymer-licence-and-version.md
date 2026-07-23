@@ -23,22 +23,49 @@ source, and three clauses bind this repository directly:
 | **§5** — "The User shall notify Hygeos of each modification done by it to the source code" | If we patch Polymer, we must tell Hygeos. Prefer configuration over patching. |
 | **§6** — copyright and proprietary notices must be reproduced on every copy | Any vendored file keeps its header. |
 
-### Consequence for the pipeline
+### Consequence for the pipeline — we *can* still have Docker
 
-The Docker image must **not** contain Polymer. Instead:
+The licence restricts **distribution**, not **containerisation**. The distinction matters and
+is easy to get backwards:
 
-- `Dockerfile` installs Acolite and C2RCC (SNAP) only.
-- Polymer is fetched at **run time** by the user, into a bind-mounted directory, after the
-  user has accepted the Hygeos terms themselves.
-- `notebooks/01_data_download.py` checks for a `POLYMER_DIR` environment variable and skips
-  the Polymer chain with a clear message if it is unset, rather than failing.
-- The Polymer leg is therefore **reproducible but not turnkey**. This is a licence
-  constraint, not a design flaw, and it must be stated plainly in the Replication Study's
-  Methodology field and in `README.md` — the FAIR4RS "Reusable" claim is weaker for this one
-  component and pretending otherwise would be dishonest.
+| Action | Allowed? | Why |
+|---|---|---|
+| Build a local image containing Polymer, for your own use | **Yes** | §6 permits copies "as necessary for use by the User" |
+| Run that image on your own machines / your institution's | **Yes** | §10 permits access by "employees of the User" |
+| Push that image to **public GHCR**, Docker Hub, or Zenodo | **No** | §2 transfer to third parties; §10 disclosure |
+| Publish an image *without* Polymer | **Yes** | Nothing restricted is inside it |
+
+So the design is:
+
+- **The published image** (`.github/workflows/docker.yml` → GHCR) contains the full pipeline
+  **minus Polymer**: Acolite, C2RCC/SNAP, and everything else. It is complete and runnable
+  for two of the three atmospheric-correction chains.
+- **Polymer is an opt-in pixi feature.** v4.17.3 ships `pyproject.toml` + `meson.build` and
+  is `pip install`-able straight from the tag, so it belongs in an optional feature rather
+  than a bind mount:
+
+  ```toml
+  # pixi.toml — opt-in; the user fetches Polymer directly from Hygeos and
+  # accepts the Hygeos Terms of Use by doing so. We never redistribute it.
+  [feature.polymer.pypi-dependencies]
+  polymer = { git = "https://github.com/hygeos/polymer.git", tag = "v4.17.3" }
+
+  [environments]
+  polymer = { features = ["polymer"], solve-group = "default" }
+  ```
+
+  `pixi run -e polymer …` enables the third chain. The default environment does not, and
+  `03_analysis.py` skips the Polymer chain with a clear message rather than failing.
+
+  This is the honest mechanism: each user pulls Polymer **from Hygeos**, not from us, which
+  is also what §3 requires — the licence is granted per-user, for the user's own country.
+
+- The Polymer leg is therefore **reproducible but not turnkey**, and that must be stated in
+  the Replication Study's Methodology field and in `README.md`. The FAIR4RS "Reusable" claim
+  is genuinely weaker for this one component; pretending otherwise would be dishonest.
 
 Acolite (RBINS, GPLv3) and C2RCC (inside ESA SNAP) carry no such restriction and can both be
-baked into the image and archived.
+baked into the published image and archived on Zenodo.
 
 ## Version choice — v4.12 is *not* a safe default
 
@@ -65,17 +92,21 @@ taken from `CHANGELOG.TXT`:
 Points 3 and 4 are conveniences. **Point 1 is a correctness issue** and point 2 is a
 will-it-run issue.
 
-### Recommended approach
+### Decision (2026-07-22): pin `v4.17.3`
 
-Run **v4.17.3 as the primary**, and treat the version question as a measurement rather than
-an assumption:
+`v4.17.3` is the newest tag (commit dated 2026-01-09) and is the pinned primary version.
+Polymer v5 is described by Hygeos as "in development"; the v4/v5 codebases coexist inside
+v4.17.x, and we use the **v4 API** — do not drift onto the v5 framework mid-study.
 
-- Primary chain: v4.17.3, baseline-04.00-aware, on the reprocessed L1C archive.
+- Primary chain: **v4.17.3**, baseline-04.00-aware, on the reprocessed L1C archive.
 - If v4.12 can be made to build, run it as a **sensitivity check** on a subset and report the
   delta. That converts "the version shouldn't matter" from an untested claim into a number.
-- Whatever is chosen, the exact tag goes in `pixi.toml`, in the Replication Study's
-  Methodology field, and in `README.md`. "We used Polymer" without a version is precisely the
-  gap that makes the original hard to reproduce.
+  If it cannot be built (likely — old cython/makefile build, retired CDS API), say so rather
+  than quietly dropping the comparison.
+- The exact tag goes in `pixi.toml`, in the Replication Study's Methodology field, and in
+  `README.md`. "We used Polymer" without a version is precisely the gap that makes the
+  original study hard to reproduce — not repeating it is part of the point of this
+  replication.
 
 Record any observed v4.12-vs-v4.17.3 difference in the Outcome's limitations. A processor
 version difference is a legitimate deviation for a Replication Study, but only if declared.
