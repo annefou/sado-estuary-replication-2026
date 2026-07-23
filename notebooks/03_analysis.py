@@ -127,12 +127,33 @@ def run_acolite(safe_dir: Path, out_dir: Path) -> Path:
     return out_dir
 
 
-def run_c2rcc(safe_dir: Path, out_dir: Path, graph: Path = Path("../scripts/c2rcc_graph.xml")) -> Path:
+# C2RCC needs a scene salinity and temperature. The Westerschelde gradient is
+# large, so passing per-scene values (from the nearest-in-time Rijkswaterstaat
+# measurement) beats a single default. These fall back to estuarine averages when
+# no in situ value is available for a scene.
+DEFAULT_SALINITY = 20.0  # practical salinity — estuary-axis average
+DEFAULT_TEMPERATURE = 12.0  # deg C — annual mean; refine per-scene where possible
+
+
+def run_c2rcc(
+    safe_dir: Path,
+    out_dir: Path,
+    *,
+    salinity: float = DEFAULT_SALINITY,
+    temperature: float = DEFAULT_TEMPERATURE,
+    graph: Path = Path("../scripts/c2rcc_graph.xml"),
+) -> Path:
     """Atmospherically correct one scene with C2RCC via SNAP gpt."""
     out_dir.mkdir(parents=True, exist_ok=True)
     target = out_dir / "c2rcc.nc"
     subprocess.run(
-        ["gpt", str(graph), f"-Pinput={safe_dir}", f"-Poutput={target}"],
+        [
+            "gpt", str(graph),
+            f"-Pinput={safe_dir}",
+            f"-Poutput={target}",
+            f"-Psalinity={salinity}",
+            f"-Ptemperature={temperature}",
+        ],
         check=True,
         capture_output=True,
     )
