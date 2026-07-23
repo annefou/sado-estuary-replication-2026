@@ -64,15 +64,28 @@ def test_window_reflectance_all_invalid_is_nan():
 
 
 def test_chla_gons_matches_hand_computation():
-    # One pixel, worked through the Table 2 formula by hand.
+    # One pixel, worked through the canonical Gons form by hand.
+    # p applies ONLY to the trailing bb term; the bb in (0.70 + bb) is first-power.
     rho_665, rho_705, rho_783 = 0.010, 0.012, 0.004
     bb = 1.56 * rho_783 / (0.082 - 0.6 * rho_783)
     p = 1.063
-    a_phy = (0.70 + bb**p) * (rho_705 / rho_665) - 0.40 - bb**p
+    a_phy = (0.70 + bb) * (rho_705 / rho_665) - 0.40 - bb**p
     expected = a_phy / GONS_ASTAR_PHY_665
 
     result = chla_gons(np.array([rho_665]), np.array([rho_705]), np.array([rho_783]))
     assert result[0] == pytest.approx(expected)
+
+
+def test_chla_gons_bb_exponent_only_on_trailing_term():
+    # Guard against the earlier bug where p was applied to both bb terms.
+    # With p != 1 the two formulations diverge; pin the correct one.
+    rho_665, rho_705, rho_783 = 0.010, 0.013, 0.005
+    bb = 1.56 * rho_783 / (0.082 - 0.6 * rho_783)
+    correct = ((0.70 + bb) * (rho_705 / rho_665) - 0.40 - bb**1.063) / GONS_ASTAR_PHY_665
+    buggy = ((0.70 + bb**1.063) * (rho_705 / rho_665) - 0.40 - bb**1.063) / GONS_ASTAR_PHY_665
+    result = chla_gons(np.array([rho_665]), np.array([rho_705]), np.array([rho_783]))[0]
+    assert result == pytest.approx(correct)
+    assert result != pytest.approx(buggy)  # the two really are different
 
 
 def test_chla_gons_rises_with_red_edge_ratio():

@@ -95,15 +95,28 @@ def window_reflectance(extract: WindowExtract, band: str) -> float:
 # atmospheric-correction processors — NOT on TOA reflectance.
 # --------------------------------------------------------------------------- #
 
-# Gons et al. (2005) specific phytoplankton absorption and backscatter exponent.
-# The paper's Table 2 gives the algorithm STRUCTURE but delegates the two
-# constants to reference [42] (Gons et al. 2005). These are that paper's standard
-# published values; VERIFY against [42] before trusting the absolute Chl-a scale.
-# The replication's headline is the agreement statistic, which is far less
-# sensitive to a*phy than the absolute concentration is, but the values still
-# need confirming and the source noting in the Study methodology.
-GONS_ASTAR_PHY_665 = 0.0153  # m^2 mg^-1, specific absorption of phytoplankton at 665 nm
-GONS_BACKSCATTER_EXPONENT = 1.063  # p, the exponent on bb in the a_phy expression
+# Gons et al. (2005) constants — reference [42] in the paper: Gons, Rijkeboer &
+# Ruddick, J. Plankton Res. 27, 125-127 (2005).
+#
+# The two pure-water absorptions are NOT free constants: they appear as the
+# literal 0.70 and 0.40 in the paper's own Table 2 equation, so they are verified
+# against the paper directly.
+#   aw(709) = 0.70 m^-1 ; aw(665) = 0.40 m^-1
+#
+# The exponent p and the specific absorption a*phy(665) are the standard Gons
+# 2005 published values. Their effect on this replication differs by metric and
+# is worth being precise about:
+#   * a*phy(665) is a pure divisor (Chl = a_phy / a*phy), so it rescales every
+#     retrieval by the same factor. R^2 is INVARIANT to it; the regression slope
+#     scales by 1/a*phy; BIAS, APD and RPD DO depend on it. The paper's headline
+#     asymmetry rests on R^2, which this constant cannot move — but the absolute
+#     Chl-a scale and the error metrics can, so confirm against [42].
+#   * p enters only the bb^p correction term; bb is small in these waters, so its
+#     leverage is modest.
+AW_665 = 0.40  # m^-1, pure water absorption at 665 nm (verified vs paper Table 2)
+AW_709 = 0.70  # m^-1, pure water absorption at ~709 nm (verified vs paper Table 2)
+GONS_ASTAR_PHY_665 = 0.0153  # m^2 mg^-1 — standard Gons value; confirm vs [42]
+GONS_BACKSCATTER_EXPONENT = 1.063  # p — standard Gons value; confirm vs [42]
 
 
 def chla_gons(
@@ -114,11 +127,16 @@ def chla_gons(
     astar_phy_665: float = GONS_ASTAR_PHY_665,
     p: float = GONS_BACKSCATTER_EXPONENT,
 ) -> np.ndarray:
-    """Chlorophyll-a via Gons et al. (2005), exactly as Table 2 states it.
+    """Chlorophyll-a via Gons et al. (2005), as Table 2 states it.
 
         bb(783)      = 1.56 * rho_w(783) / (0.082 - 0.6 * rho_w(783))
-        a_phy(665)   = (0.70 + bb^p) * rho_w(705)/rho_w(665) - 0.40 - bb^p
+        a_phy(665)   = (0.70 + bb) * rho_w(705)/rho_w(665) - 0.40 - bb^p
         Chl_a        = a_phy(665) / a*_phy(665)
+
+    Note the exponent ``p`` applies ONLY to the trailing ``bb`` term; the ``bb``
+    inside ``(0.70 + bb)`` is first-power. (An earlier revision wrongly raised
+    both to ``p``; corrected 2026-07-23 against the algorithm's canonical form —
+    aphy(665) = (0.70 + bb)*rho(705)/rho(665) - 0.40 - bb^p.)
 
     This is the ``cGS`` chain — the paper's selected Chl-a algorithm and this
     replication's anchor. Inputs are water-leaving reflectances at 665 (B4),
@@ -129,5 +147,5 @@ def chla_gons(
     rho_783 = np.asarray(rho_w_783, dtype="float64")
 
     backscatter = 1.56 * rho_783 / (0.082 - 0.6 * rho_783)
-    a_phy_665 = (0.70 + backscatter**p) * (rho_705 / rho_665) - 0.40 - backscatter**p
+    a_phy_665 = (AW_709 + backscatter) * (rho_705 / rho_665) - AW_665 - backscatter**p
     return a_phy_665 / astar_phy_665
