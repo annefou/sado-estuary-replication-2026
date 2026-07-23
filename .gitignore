@@ -24,6 +24,16 @@ __pycache__/
 # Environment / OS
 .DS_Store
 .env
+.env.*
+# Credentials must live OUTSIDE this repo (~/.aws/credentials) — Phase 4 archives
+# the source tree to Zenodo and a published secret cannot be unpublished. These
+# patterns are a backstop, not the primary control.
+*.pem
+*.key
+credentials
+credentials.*
+*secret*
+.aws/
 
 # Data — never committed; downloaded on first run
 data/*

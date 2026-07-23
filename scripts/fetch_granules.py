@@ -7,13 +7,29 @@ object already present with the right size is skipped, so an interrupted run can
 simply be repeated.
 
 Credentials — generate an S3 key pair at
-https://eodata-s3keysmanager.dataspace.copernicus.eu/ and export:
+https://eodata-s3keysmanager.dataspace.copernicus.eu/, then use ONE of:
 
-    export CDSE_S3_ACCESS_KEY="..."
-    export CDSE_S3_SECRET_KEY="..."
+1. A profile in ~/.aws/credentials (recommended — lives outside the repo, so it
+   cannot be swept into the Zenodo source tarball at release):
 
-AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY are accepted as fallbacks. In CI the
-secrets are CDSE_S3_ACCESS_KEY / CDSE_S3_SECRET_KEY.
+       [cdse]
+       aws_access_key_id = ...
+       aws_secret_access_key = ...
+
+   then `chmod 600 ~/.aws/credentials`. Override the profile name with
+   CDSE_S3_PROFILE if you call it something else.
+
+2. Environment variables, for CI and one-off shells:
+
+       export CDSE_S3_ACCESS_KEY="..."
+       export CDSE_S3_SECRET_KEY="..."
+
+Resolution order is env vars, then profile. AWS_ACCESS_KEY_ID /
+AWS_SECRET_ACCESS_KEY are accepted as fallbacks. In CI the secrets are
+CDSE_S3_ACCESS_KEY / CDSE_S3_SECRET_KEY.
+
+Never put credentials in a file inside this repository. Phase 4 archives the
+repository to Zenodo, and a published secret cannot be unpublished.
 
 Usage:
     pixi run python scripts/fetch_granules.py                     # all match-up scenes
@@ -39,25 +55,43 @@ GRANULE_DIR = REPO_ROOT / "data" / "raw" / "s2"
 
 
 def s3_client():
-    """Boto3 client against the Copernicus S3 endpoint."""
+    """Boto3 client against the Copernicus S3 endpoint. Env vars win over the profile."""
     import boto3
     from botocore.config import Config
+    from botocore.exceptions import ProfileNotFound
 
+    config = Config(
+        signature_version="s3v4", retries={"max_attempts": 5, "mode": "standard"}
+    )
     access_key = os.environ.get("CDSE_S3_ACCESS_KEY") or os.environ.get("AWS_ACCESS_KEY_ID")
     secret_key = os.environ.get("CDSE_S3_SECRET_KEY") or os.environ.get("AWS_SECRET_ACCESS_KEY")
-    if not (access_key and secret_key):
-        sys.exit(
-            "No Copernicus S3 credentials found.\n"
-            "Set CDSE_S3_ACCESS_KEY and CDSE_S3_SECRET_KEY (see the module docstring)."
+
+    if access_key and secret_key:
+        print("credentials: environment variables")
+        return boto3.client(
+            "s3",
+            endpoint_url=ENDPOINT,
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+            config=config,
         )
 
-    return boto3.client(
-        "s3",
-        endpoint_url=ENDPOINT,
-        aws_access_key_id=access_key,
-        aws_secret_access_key=secret_key,
-        config=Config(signature_version="s3v4", retries={"max_attempts": 5, "mode": "standard"}),
-    )
+    profile = os.environ.get("CDSE_S3_PROFILE", "cdse")
+    try:
+        session = boto3.Session(profile_name=profile)
+    except ProfileNotFound:
+        sys.exit(
+            "No Copernicus S3 credentials found.\n\n"
+            f"Either add a [{profile}] profile to ~/.aws/credentials:\n"
+            f"    [{profile}]\n"
+            "    aws_access_key_id = ...\n"
+            "    aws_secret_access_key = ...\n\n"
+            "or export CDSE_S3_ACCESS_KEY and CDSE_S3_SECRET_KEY.\n"
+            "Generate a key pair at https://eodata-s3keysmanager.dataspace.copernicus.eu/\n"
+            "Do not store credentials inside this repository."
+        )
+    print(f"credentials: ~/.aws/credentials profile [{profile}]")
+    return session.client("s3", endpoint_url=ENDPOINT, config=config)
 
 
 def scene_prefix(s3path: str) -> str:
