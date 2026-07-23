@@ -36,6 +36,7 @@ boto3 = "*"                 # Copernicus S3 (eodata) granule download — script
 # --- geospatial / EO ---
 netcdf4 = "*"               # NetCDF I/O — preferred over .npz for arrays (see DOMAIN.md)
 rasterio = "*"              # Sentinel-2 granule raster I/O
+libgdal-jp2openjpeg = "*"   # JP2 driver — WITHOUT this rasterio cannot open S2 .jp2 bands
 geopandas = "*"             # station geometry, estuary masks
 pyproj = "*"                # CRS transforms (WGS84 <-> UTM31N for Westerschelde)
 dask = "*"                  # out-of-core scene processing
@@ -43,9 +44,16 @@ shapely = "*"               # scene-footprint containment tests in 02
 # --- HEALPix / DGGS archival of derived products (notebook 05) ---
 # healpix-geo, not healpy: geographic data needs WGS84 ellipsoidal corrections.
 # Always NESTED, and always ellipsoid="WGS84" — see DOMAIN.md.
-healpix-geo = "*"
+healpix-geo = "*"           # conda-forge
 zarr = ">=3"                # EOPF Zarr / GRID4EARTH profile requires Zarr v3
 xdggs = "*"                 # DGGS-aware xarray accessors for reading the archive
+
+# Atmospheric-correction processors are NOT conda/pip packages — they are external
+# programs installed by the Dockerfile:
+#   Acolite  (GPL-3.0)  cloned from github.com/acolite/acolite
+#   C2RCC    (GPL-3.0)  ships inside ESA SNAP, invoked via `gpt`
+#   Polymer             opt-in [feature.polymer] only — never in the public image
+# See docs/polymer-licence-and-version.md and notebooks/03_analysis.py.
 # --- replace/extend with the deps your replication needs ---
 # Examples (uncomment as needed):
 # statsmodels = "*"          # GLM/GLMM regression
@@ -63,7 +71,10 @@ xdggs = "*"                 # DGGS-aware xarray accessors for reading the archiv
 # dask = "*"                 # out-of-core / parallel
 
 # Pip-only deps go in [pypi-dependencies]. Conda-forge is preferred where available.
-# [pypi-dependencies]
+[pypi-dependencies]
+# healpix-resample is PyPI-only (GRID4EARTH); not published on conda-forge.
+# (lon,lat)->HEALPix regridding of the derived products in notebook 05.
+healpix-resample = "*"
 # pygbif = "*"               # GBIF occurrences
 # polytope-client = "*"      # Destination Earth Climate DT
 # earthkit-data = "*"
