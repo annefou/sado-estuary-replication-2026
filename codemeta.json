@@ -8,8 +8,6 @@
   "dateModified": "2026-07-22",
   "license": "https://spdx.org/licenses/MIT",
   "codeRepository": "https://github.com/annefou/sado-estuary-replication-2026",
-  "identifier": "{{ZENODO_DOI}}",
-  "@id": "{{ZENODO_DOI}}",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "Python",

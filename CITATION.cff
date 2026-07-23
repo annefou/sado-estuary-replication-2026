@@ -23,14 +23,13 @@ date-released: "2026-07-22"
 # named was gone and "edit by hand" was the only path left. Two repos built from
 # this template then recorded the version DOI two different ways — one a
 # structured identifier, one a prose comment. Hence the automation.)
-doi: "{{ZENODO_DOI}}"
-identifiers:
-  - type: doi
-    value: "{{ZENODO_DOI}}"
-    description: "Concept DOI (resolves to the latest version) — cite the project"
-  # On release, the workflow adds:
-  #   - type: doi   value: <version DOI>  "Version DOI for vX.Y.Z — pins this exact release; cite this from nanopubs"
-  #   - type: swh   value: swh:1:rev:<commit>;origin=<repo>  "Software Heritage ID of the vX.Y.Z source tree"
+# No `doi:` / `identifiers:` yet — the Zenodo concept DOI does not exist until
+# the first release mints it. scripts/set_release_identifiers.py (via
+# release-identifiers.yml) inserts them on release:
+#   doi:          <concept DOI>
+#   identifiers:  concept DOI + version DOI + Software Heritage ID
+# A leftover DOI placeholder token here would ship a non-resolving DOI as a
+# citable identifier, so it is intentionally absent rather than templated.
 keywords:
   - replication
   - reproducibility
