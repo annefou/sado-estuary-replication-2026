@@ -39,6 +39,10 @@ credentials.*
 data/*
 !data/.gitkeep
 !data/README.md
+# Small provenance manifest of the match-up scenes (id, name, tile, cloud, s3path,
+# quantity). Committed so a fresh checkout / CI can fetch the exact granules
+# without re-running notebooks 01+02. The granules themselves stay ignored.
+!data/matchup_scenes.csv
 
 # Prior-chain import cache — never committed; regenerated on demand from
 # the entry URI in CITATION.cff `references:`. The persistent pointer to

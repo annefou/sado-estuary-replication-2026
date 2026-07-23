@@ -51,6 +51,7 @@ BUCKET = "eodata"
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MATCHUPS = REPO_ROOT / "data" / "interim" / "matchups_westerschelde.parquet"
+MANIFEST = REPO_ROOT / "data" / "matchup_scenes.csv"  # committed; no notebooks needed
 GRANULE_DIR = REPO_ROOT / "data" / "raw" / "s2"
 
 
@@ -153,19 +154,36 @@ def download_scene(client, s3path: str, name: str, dry_run: bool = False) -> tup
     return fetched, skipped
 
 
+def load_scenes(quantity: str | None) -> pd.DataFrame:
+    """Scene list from the interim match-ups if present, else the committed manifest.
+
+    The manifest (data/matchup_scenes.csv) lets a fresh checkout or CI fetch the
+    exact granules without re-running notebooks 01+02.
+    """
+    if MATCHUPS.exists():
+        frame = pd.read_parquet(MATCHUPS)
+    elif MANIFEST.exists():
+        frame = pd.read_csv(MANIFEST)
+    else:
+        sys.exit(
+            f"Neither {MATCHUPS} nor {MANIFEST} found — run notebooks/02_data_clean.py "
+            "or restore the committed manifest."
+        )
+    if quantity:
+        frame = frame[frame["quantity"] == quantity]
+    return frame.drop_duplicates("id")[["id", "name", "s3path"]]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--quantity", help="restrict to scenes matching one quantity")
+    parser.add_argument("--limit", type=int, help="download at most N scenes (diagnostics)")
     parser.add_argument("--dry-run", action="store_true", help="report volume, download nothing")
     args = parser.parse_args()
 
-    if not MATCHUPS.exists():
-        sys.exit(f"{MATCHUPS} not found — run notebooks/02_data_clean.py first.")
-
-    matchups = pd.read_parquet(MATCHUPS)
-    if args.quantity:
-        matchups = matchups[matchups["quantity"] == args.quantity]
-    scenes = matchups.drop_duplicates("id")[["id", "name", "s3path"]]
+    scenes = load_scenes(args.quantity)
+    if args.limit:
+        scenes = scenes.head(args.limit)
     print(f"{len(scenes)} distinct scene(s) required" + (" [dry run]" if args.dry_run else ""))
 
     GRANULE_DIR.mkdir(parents=True, exist_ok=True)
