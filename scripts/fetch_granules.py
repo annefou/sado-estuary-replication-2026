@@ -124,6 +124,14 @@ def download_scene(client, s3path: str, name: str, dry_run: bool = False) -> tup
     fetched = skipped = 0
     for obj in objects:
         key, size = obj["Key"], obj["Size"]
+
+        # Zero-byte directory markers. Copernicus S3 emits one whose key is the
+        # .SAFE path itself; writing it as a file makes the directory of the same
+        # name uncreatable, and mkdir(exist_ok=True) still raises because exist_ok
+        # tolerates an existing *directory*, not an existing file.
+        if size == 0 or key.endswith("/"):
+            continue
+
         target = GRANULE_DIR / key
         if target.exists() and target.stat().st_size == size:
             skipped += size
@@ -131,6 +139,14 @@ def download_scene(client, s3path: str, name: str, dry_run: bool = False) -> tup
         if dry_run:
             fetched += size
             continue
+
+        # Repair the damage an earlier run may have done.
+        for ancestor in target.parents:
+            if ancestor == GRANULE_DIR:
+                break
+            if ancestor.is_file():
+                ancestor.unlink()
+
         target.parent.mkdir(parents=True, exist_ok=True)
         client.download_file(BUCKET, key, str(target))
         fetched += size
@@ -156,11 +172,22 @@ def main() -> None:
     client = s3_client()
 
     total_fetched = total_skipped = 0
+    failures: list[str] = []
     for position, scene in enumerate(scenes.itertuples(), start=1):
         print(f"[{position:>3}/{len(scenes)}] {scene.name}", flush=True)
-        fetched, skipped = download_scene(client, scene.s3path, scene.name, args.dry_run)
+        try:
+            fetched, skipped = download_scene(client, scene.s3path, scene.name, args.dry_run)
+        except Exception as exc:  # one bad scene must not abort a 40 GB run
+            print(f"  !! FAILED: {type(exc).__name__}: {exc}", flush=True)
+            failures.append(scene.name)
+            continue
         total_fetched += fetched
         total_skipped += skipped
+
+    if failures:
+        print(f"\n{len(failures)} scene(s) failed — re-run to retry (downloads resume):")
+        for name in failures:
+            print(f"  {name}")
 
     verb = "would fetch" if args.dry_run else "fetched"
     print(f"\n{verb} {total_fetched / 1e9:.1f} GB; {total_skipped / 1e9:.1f} GB already present")
