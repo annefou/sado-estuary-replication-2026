@@ -30,6 +30,14 @@ nbclient = "*"
 ipykernel = "*"
 # --- pipeline driver ---
 snakemake = "*"
+# --- data access ---
+requests = "*"              # Rijkswaterstaat DDAPI 2.0 + Copernicus Data Space OData
+# --- geospatial / EO ---
+netcdf4 = "*"               # NetCDF I/O — preferred over .npz for arrays (see DOMAIN.md)
+rasterio = "*"              # Sentinel-2 granule raster I/O
+geopandas = "*"             # station geometry, estuary masks
+pyproj = "*"                # CRS transforms (WGS84 <-> UTM31N for Westerschelde)
+dask = "*"                  # out-of-core scene processing
 # --- replace/extend with the deps your replication needs ---
 # Examples (uncomment as needed):
 # statsmodels = "*"          # GLM/GLMM regression
@@ -66,10 +74,23 @@ pytest = "*"
 # tests and scripts/check_template_drift.py both need it. See nanopubs/templates/.
 rdflib = "*"
 
+# Polymer is NOT open source. Hygeos Terms of Use v2.0 §2/§10 forbid transferring it to
+# third parties, so it must never be baked into the published Docker image or the Zenodo
+# tarball. Keeping it in an opt-in feature means each user installs it directly from Hygeos
+# under their own acceptance of the Terms — which is also what §3 requires, since the licence
+# is granted per-user for the user's own country. See docs/polymer-licence-and-version.md.
+#
+# v4.17.3, not the paper's v4.12: v4.15 added support for Sentinel-2 processing baseline
+# 04.00, whose TOA reflectance offset applies to the reprocessed 2018-2020 archive we use.
+[feature.polymer.pypi-dependencies]
+polymer = { git = "https://github.com/hygeos/polymer.git", tag = "v4.17.3" }
+
 [environments]
 default = { solve-group = "default" }
 docs = { features = ["docs"], solve-group = "default" }
 tests = { features = ["tests"], solve-group = "default" }
+# Opt-in: `pixi run -e polymer ...` enables the third atmospheric-correction chain.
+polymer = { features = ["polymer"], solve-group = "default" }
 
 [tasks]
 run = "snakemake --cores 1"

@@ -67,10 +67,16 @@ phrase here. Leave empty for a single short quote.
 Why this quote matters and what the replication tests. Connect the paper's claim to the work this repo does. Don't repeat the quote.
 
 ```
-The abstract hedges; this sentence does not. It commits to a parameter-dependent verdict, and that is what decides whether Sentinel-2 MSI is operationally usable under the Water Framework Directive: a sensor trustworthy for one variable but not another is a different monitoring proposition from one that simply works. That verdict rests on 19 to 21 match-ups from one estuary over two years. This replication answers the sentence's own closing call, re-running the processing chain over the Westerschelde — a comparably turbid, well-mixed mesotidal estuary — against 274 timestamped Rijkswaterstaat match-ups spanning the same 2018–2020 window, roughly ten times the original sample, and tests whether the Chl-a verdict survives a more complete set of match-ups.
+The abstract hedges; this sentence does not. It commits to a parameter-dependent verdict, and that is what decides whether Sentinel-2 MSI is operationally usable under the Water Framework Directive: a sensor trustworthy for one variable but not another is a different monitoring proposition from one that simply works. That verdict rests on 19 to 21 match-ups from one estuary over two years. This replication answers the sentence's own closing call, re-running the processing chain over the Westerschelde — a comparably turbid, well-mixed mesotidal estuary — against 217 quality-screened in situ chlorophyll observations spanning the same 2018–2020 window, and tests whether the Chl-a verdict survives a more complete set of match-ups.
 ```
 
-Character count: 763 / 800.
+Character count: 736 / 800.
+
+> **Wording is deliberate.** 217 is the count of *in situ observations* that survive
+> Rijkswaterstaat's missing-data screening — **not** the final match-up count. A match-up
+> additionally requires a cloud-free Sentinel-2 scene within ±2 h, so the realised N will be
+> lower and is not known until Phase 3. Do not restate 217 as "217 match-ups" anywhere in the
+> chain; the Outcome reports the realised figure.
 
 > **Note on the anchor.** The quotation deliberately carries both limbs of the paper's
 > asymmetry, but the AIDA that follows must be atomic, and it anchors on the **Chl-a** limb —

@@ -152,14 +152,26 @@ the same inner/outer structure the Sado paper uses.
 **Catalogue capability was then checked against actual observations** (the trap Waterbase
 set), for March 2018 – March 2020, at six axis stations:
 
-| Quantity | Code | Records | Verdict |
-|---|---|---|---|
-| Chlorophyll-a | `CONCTTE` / `CHLFa`, µg/l | **274** (27–75 per station) | Usable |
-| Suspended matter (SPM) | `CONCTTE` / `OS`, mg/l | **274** | Usable, co-located with Chl-a |
-| Phaeophytin-a | `CONCTTE` / `FEOa`, µg/l | **219** | Bonus — constrains Chl-a algorithm error |
-| Secchi depth | `ZICHT` | **238** | Usable (transparency proxy) |
-| Turbidity | `TROEBHD` | **0** | Absent in this period |
-| Light extinction | `EXTINCTE` | **0** | Absent at these stations |
+| Quantity | Code | Returned | **Usable** | Verdict |
+|---|---|---|---|---|
+| Chlorophyll-a | `CONCTTE` / `CHLFa`, µg/l | 274 | **217** | Usable |
+| Suspended matter (SPM) | `CONCTTE` / `OS`, mg/l | 274 | **240** | Usable, co-located with Chl-a |
+| Phaeophytin-a | `CONCTTE` / `FEOa`, µg/l | 219 | **164** | Bonus — constrains Chl-a algorithm error |
+| Secchi depth | `ZICHT`, dm | 238 | **232** | Usable (transparency proxy) |
+| Turbidity | `TROEBHD` | 0 | 0 | Absent in this period |
+| Light extinction | `EXTINCTE` | 0 | 0 | Absent at these stations |
+
+> **Corrected 2026-07-22 after executing `notebooks/01_data_download.py`.** The "Returned"
+> column is what the API hands back and is what an earlier revision of this note reported.
+> **152 of those 1005 observations are Rijkswaterstaat's missing-data marker, the literal
+> number `999999999999`** — not a null. It survives `dropna()`, and left in place it inflated
+> the chlorophyll mean to 2×10¹¹ µg/l. The "Usable" column is post-screening and is the count
+> to quote. Screened values are plausible: Chl-a mean 5.3 µg/l (range 0.53–26), SPM mean
+> 48.9 mg/l (range 1–360) — appropriate for a turbid mesotidal estuary.
+>
+> The marker is not evenly spread: `soelekerkepolder.oost` alone accounts for 38 of the
+> chlorophyll gaps and 33 of the SPM gaps, so that station is roughly half empty and needs
+> care in station-level interpretation.
 
 **Note on the SPM code.** Rijkswaterstaat files suspended matter as parameter `OS`
 ("Onopgeloste stoffen", undissolved solids), **not** under any label containing *zwevende
@@ -225,8 +237,9 @@ Three ways forward were put to the user, in preference order:
 | **Stations** | 6 estuary-axis stations, Vlissingen (mouth) → Schaar van Ouden Doel (Belgian border) |
 | **Period** | March 2018 – March 2020 — the same window as the original study |
 | **In situ reference** | Rijkswaterstaat DDAPI 2.0, open, no API key |
-| **Parameters tested** | Chl-a (`CONCTTE`/`CHLFa`) and SPM (`CONCTTE`/`OS`), 274 match-up candidates each |
-| **Supporting** | Phaeophytin-a (219), Secchi depth (238) |
+| **Parameters tested** | Chl-a (`CONCTTE`/`CHLFa`, **217** usable) and SPM (`CONCTTE`/`OS`, **240** usable) |
+| **Supporting** | Phaeophytin-a (164), Secchi depth (232) |
+| **Sentinel-2 scenes** | **275** L1C scenes intersecting the estuary, cloud cover < 60 % |
 | **Not tested** | Turbidity and aCDOM — no open data at this site for this period; to be declared explicitly in the Outcome's limitations |
 | **Chain anchor** | The **Chl-a** limb of the quoted sentence, not the turbidity limb |
 

@@ -95,10 +95,15 @@ data source with the method held constant, which is a Replication Study, not a R
 (`00b_in_situ_source_scan.md`) established that no open in situ reference exists for the Sado
 over this period at all, so the replication moves to the estuary where the data does exist.
 The Westerschelde is a mesotidal, well-mixed, turbid estuary in a LifeWatch ERIC member
-state, with six Rijkswaterstaat axis stations supplying **274 co-located Chl-a and SPM
-match-up candidates over the very same March 2018 – March 2020 window** — roughly ten times
-the original N. Turbidity and aCDOM are unavailable there for that period and are declared
-untested.
+state, with six Rijkswaterstaat axis stations supplying, over the very same
+March 2018 – March 2020 window, **217 quality-screened Chl-a and 240 SPM observations**
+against the original study's N = 19–21, alongside **275 Sentinel-2 L1C scenes**. Turbidity
+and aCDOM are unavailable there for that period and are declared untested.
+
+These counts are post-screening and verified by executing
+`notebooks/01_data_download.py`; 152 of the 1005 raw observations carry Rijkswaterstaat's
+missing-data marker (`999999999999`) and are removed. The realised match-up count will be
+lower still, since each observation also needs a cloud-free scene within ±2 h.
 
 Two open decisions, flagged rather than assumed (see "Notes" below): which independent
 in situ source to validate against, and whether to request the original AQUASado data
