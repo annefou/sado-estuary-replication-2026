@@ -226,22 +226,63 @@ Three ways forward were put to the user, in preference order:
 3. **Add the Oosterschelde or the Belgian coastal zone** as a second site to recover the
    turbidity limb alongside the Westerschelde Chl-a limb.
 
-## DESIGN FROZEN — 2026-07-22
+## PERIOD UNFROZEN — 2026-07-23
 
-**Option 1 selected by A. Fouilloux.** The replication is now defined as:
+The 2018–2020 window was abandoned after `02_data_clean.py` measured the realised match-up
+count. **At the original window the replication yielded 13 chlorophyll match-ups from six
+stations and 16 from twelve — comparable to the paper's own N = 19–21, not an improvement on
+it.** The design's premise ("a more complete set of match-ups") was false as specified.
+
+Adding stations does not fix it, and the reason is structural: Rijkswaterstaat samples the
+whole estuary **on the same cruise days**, and every Westerschelde station falls in the same
+two MGRS tiles (`T31UES`, `T31UET`). Extra stations therefore contribute observations on the
+*same dates* against the *same scenes*. 741 observations across 12 stations still produced
+only 16 match-ups. **Only more dates help.**
+
+The original window was set by the authors' field campaign, not by the science, and this
+replication already departs from the paper on site — so period correspondence was never
+load-bearing.
+
+## DESIGN FROZEN (revision 2) — 2026-07-23
 
 | | |
 |---|---|
-| **Type** | Replication Study (different site, different in situ reference; method held constant) |
+| **Type** | Replication Study (different site, different period, different in situ reference; method held constant) |
 | **Site** | Westerschelde, Netherlands — mesotidal, well-mixed, turbid; LifeWatch ERIC member state |
 | **Stations** | 6 estuary-axis stations, Vlissingen (mouth) → Schaar van Ouden Doel (Belgian border) |
-| **Period** | March 2018 – March 2020 — the same window as the original study |
+| **Period** | **January 2016 – July 2026** — the full Sentinel-2 era |
 | **In situ reference** | Rijkswaterstaat DDAPI 2.0, open, no API key |
-| **Parameters tested** | Chl-a (`CONCTTE`/`CHLFa`, **217** usable) and SPM (`CONCTTE`/`OS`, **240** usable) |
-| **Supporting** | Phaeophytin-a (164), Secchi depth (232) |
-| **Sentinel-2 scenes** | **275** L1C scenes intersecting the estuary, cloud cover < 60 % |
-| **Not tested** | Turbidity and aCDOM — no open data at this site for this period; to be declared explicitly in the Outcome's limitations |
-| **Chain anchor** | The **Chl-a** limb of the quoted sentence, not the turbidity limb |
+| **Sentinel-2 scenes** | **1382** L1C scenes intersecting the estuary, cloud cover < 60 % |
+| **Chain anchor** | The **Chl-a** limb — now settled on evidence, see below |
+| **Not tested** | aCDOM — no open equivalent at this site in any period; declare in the Outcome's limitations |
+
+### Realised match-ups (±2 h, footprint-verified), from `02_data_clean.py`
+
+| Quantity | Usable observations | **Matched** | vs original N = 19–21 |
+|---|---|---|---|
+| Chlorophyll-a | 1154 | **53** | ~2.5× better |
+| SPM | 1236 | **61** | ~3× better |
+| Secchi depth | 1154 | **59** | — |
+| Phaeophytin-a | 892 | **47** | — |
+| Turbidity | 279 | **15** | **worse** |
+
+Match rate is ~5 % throughout, set by cloud-free Sentinel-2 revisit against roughly monthly
+sampling. These remain an **upper bound** — per-pixel quality screening in `03` will reduce
+them further.
+
+### The chain anchor is settled: Chl-a
+
+Extending the period made turbidity available (Rijkswaterstaat turbidity at these stations
+begins in 2024), which reopened the possibility of anchoring on the turbidity limb — the
+paper's stronger, more citable claim. **The data says no.** Turbidity yields only 15
+match-ups, *fewer* than the original study's 21, because it exists for barely 2.5 years.
+Anchoring there would mean testing a well-supported claim with less evidence than the people
+who made it — the opposite of what a replication is for.
+
+Chlorophyll-a yields 53 against the original ~20. That is the one limb where this replication
+genuinely improves on the original's evidence base, and it is the limb whose quoted sentence
+explicitly asks for exactly that. **Anchor: Chl-a.** Turbidity is still processed and
+reported as a secondary result, honestly labelled as no better powered than the original.
 
 The claim under test is the second sentence of `01_quote.md`: that for Chl-a, further
 research with a more complete set of match-ups is needed. This replication supplies that

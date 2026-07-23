@@ -63,8 +63,23 @@ RAW_DIR.mkdir(parents=True, exist_ok=True)
 # Rijkswaterstaat catalogue (`OphalenCatalogus`); coordinates are ETRS89.
 
 # %%
-PERIOD_START = "2018-03-01T00:00:00.000+01:00"
-PERIOD_END = "2020-04-01T00:00:00.000+01:00"
+# Study period: the full Sentinel-2 era, NOT the original study's March 2018 –
+# March 2020 field-campaign window.
+#
+# Why: at the original window this replication yielded only 13–16 chlorophyll
+# match-ups — comparable to the paper's own N = 19–21, not an improvement on it.
+# Adding stations does not help, because Rijkswaterstaat samples the whole
+# estuary on the same cruise days and every Westerschelde station falls in the
+# same two MGRS tiles, so extra stations contribute observations on the *same*
+# dates against the *same* scenes. Only more dates help.
+#
+# The original window was set by the authors' field campaign, not by anything
+# about the science, and we already depart from the paper on site — so period
+# correspondence was never load-bearing. Extending also makes turbidity
+# testable: Rijkswaterstaat turbidity at these stations begins in 2024.
+# See nanopubs/drafts/00b_in_situ_source_scan.md.
+PERIOD_START = "2016-01-01T00:00:00.000+01:00"
+PERIOD_END = "2026-07-23T00:00:00.000+01:00"
 
 # Westerschelde bounding box (lon_min, lat_min, lon_max, lat_max), WGS84.
 WESTERSCHELDE_BBOX = (3.35, 51.30, 4.35, 51.58)
@@ -86,12 +101,14 @@ STATIONS = {
 QUANTITIES = {
     "chlorophyll_a": {"grootheid": "CONCTTE", "parameter": "CHLFa", "unit": "ug/l"},
     "spm": {"grootheid": "CONCTTE", "parameter": "OS", "unit": "mg/l"},
+    "turbidity": {"grootheid": "TROEBHD", "parameter": None, "unit": "NTU/FNU"},
     "phaeophytin_a": {"grootheid": "CONCTTE", "parameter": "FEOa", "unit": "ug/l"},
     "secchi_depth": {"grootheid": "ZICHT", "parameter": None, "unit": "dm"},
 }
 
-# Turbidity (TROEBHD) and aCDOM are deliberately absent: verified to have zero
-# records at these stations for this period. Declared untested in the Outcome.
+# Turbidity is included now that the period extends past 2024 — it has no records
+# at these stations before then. aCDOM has no open equivalent at all and stays
+# untested; that must be declared in the Outcome's limitations.
 
 # %% [markdown]
 # ## 1. Rijkswaterstaat in situ match-up reference

@@ -82,16 +82,20 @@ Character count: 695 / 800.
 > It also stays deliberately non-committal on *which* estuary and *which* period, so the
 > still-open design decision on the study period cannot invalidate it.
 
-> **Note on the anchor — OPEN.** The quotation deliberately carries both limbs of the paper's
-> asymmetry, but the AIDA that follows must be atomic (`CLAUDE.md` § Atomic AIDA), so it can
-> anchor on only one: turbidity or Chl-a.
+> **Note on the anchor — SETTLED (2026-07-23): the Chl-a limb.** The quotation deliberately
+> carries both limbs of the paper's asymmetry, but the AIDA that follows must be atomic
+> (`CLAUDE.md` § Atomic AIDA), so it can anchor on only one.
 >
-> The Chl-a limb was selected on 2026-07-22 because the Westerschelde had no open turbidity
-> data for 2018–2020. That reasoning is **under review**: if the study period extends beyond
-> 2024, turbidity becomes available and the turbidity limb — the paper's stronger, more
-> citable claim — is testable again. Do not draft `02_aida.md` until the period is settled.
+> With the period extended to 2016–2026, turbidity data exists (from 2024) and the turbidity
+> limb was reconsidered — it is the paper's stronger, more citable claim. The measured
+> match-up counts decided it: turbidity yields **15** match-ups against the original study's
+> 21, while chlorophyll-a yields **53** against roughly 20. Anchoring on turbidity would mean
+> testing a well-supported claim with *less* evidence than the authors had. Chl-a is the one
+> limb where this replication genuinely improves on the original's evidence base — and it is
+> the limb whose sentence asks for precisely that.
 >
-> The quotation itself is unaffected either way, and stays verbatim.
+> Turbidity is still processed and reported as a secondary result, labelled as no better
+> powered than the original. The quotation itself is unaffected and stays verbatim.
 
 ## Publication note
 
