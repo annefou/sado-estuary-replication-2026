@@ -248,7 +248,12 @@ def query_s2_scenes(max_cloud: int = 60) -> pd.DataFrame:
     )
 
     scenes, url = [], None
-    params = {"$filter": filter_expr, "$top": "1000", "$orderby": "ContentDate/Start"}
+    params = {
+        "$filter": filter_expr,
+        "$top": "1000",
+        "$orderby": "ContentDate/Start",
+        "$expand": "Attributes",
+    }
     while True:
         response = requests.get(url or CDSE_ODATA, params=None if url else params, timeout=300)
         response.raise_for_status()
@@ -258,9 +263,26 @@ def query_s2_scenes(max_cloud: int = 60) -> pd.DataFrame:
         if not url:
             break
 
+    def cloud_of(scene: dict) -> float | None:
+        for attribute in scene.get("Attributes") or []:
+            if attribute.get("Name") == "cloudCover":
+                return attribute.get("Value")
+        return None
+
     return pd.DataFrame(
         [
-            {"id": s["Id"], "name": s["Name"], "start": s["ContentDate"]["Start"]}
+            {
+                "id": s["Id"],
+                "name": s["Name"],
+                "start": s["ContentDate"]["Start"],
+                # MGRS tile, e.g. T31UES — the Westerschelde spans more than one.
+                "tile": next((p for p in s["Name"].split("_") if p.startswith("T") and len(p) == 6), None),
+                "cloud_cover": cloud_of(s),
+                # GeoJSON polygon: lets 02 test station-in-scene properly rather than
+                # assuming every scene intersecting the bbox covers every station.
+                "footprint": json.dumps(s.get("GeoFootprint")),
+                "s3path": s.get("S3Path"),
+            }
             for s in scenes
         ]
     )
