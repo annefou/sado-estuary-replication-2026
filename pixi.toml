@@ -38,6 +38,13 @@ rasterio = "*"              # Sentinel-2 granule raster I/O
 geopandas = "*"             # station geometry, estuary masks
 pyproj = "*"                # CRS transforms (WGS84 <-> UTM31N for Westerschelde)
 dask = "*"                  # out-of-core scene processing
+shapely = "*"               # scene-footprint containment tests in 02
+# --- HEALPix / DGGS archival of derived products (notebook 05) ---
+# healpix-geo, not healpy: geographic data needs WGS84 ellipsoidal corrections.
+# Always NESTED, and always ellipsoid="WGS84" — see DOMAIN.md.
+healpix-geo = "*"
+zarr = ">=3"                # EOPF Zarr / GRID4EARTH profile requires Zarr v3
+xdggs = "*"                 # DGGS-aware xarray accessors for reading the archive
 # --- replace/extend with the deps your replication needs ---
 # Examples (uncomment as needed):
 # statsmodels = "*"          # GLM/GLMM regression

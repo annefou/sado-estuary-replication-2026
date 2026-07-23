@@ -82,20 +82,24 @@ Character count: 695 / 800.
 > It also stays deliberately non-committal on *which* estuary and *which* period, so the
 > still-open design decision on the study period cannot invalidate it.
 
-> **Note on the anchor — SETTLED (2026-07-23): the Chl-a limb.** The quotation deliberately
-> carries both limbs of the paper's asymmetry, but the AIDA that follows must be atomic
-> (`CLAUDE.md` § Atomic AIDA), so it can anchor on only one.
+> **Note on the anchor — SETTLED (2026-07-23): the Chl-a limb.** The quotation carries both
+> limbs of the paper's asymmetry, but the AIDA that follows must be atomic (`CLAUDE.md`
+> § Atomic AIDA), so it can anchor on only one.
 >
-> With the period extended to 2016–2026, turbidity data exists (from 2024) and the turbidity
-> limb was reconsidered — it is the paper's stronger, more citable claim. The measured
-> match-up counts decided it: turbidity yields **15** match-ups against the original study's
-> 21, while chlorophyll-a yields **53** against roughly 20. Anchoring on turbidity would mean
-> testing a well-supported claim with *less* evidence than the authors had. Chl-a is the one
-> limb where this replication genuinely improves on the original's evidence base — and it is
-> the limb whose sentence asks for precisely that.
+> The scientific question is the one to anchor on: **does the parameter-dependent verdict
+> hold in a different turbid mesotidal estuary?** Chl-a is where that question is live. The
+> paper reports Chl-a retrieval as its weak result and its authors flag it as unsettled, so a
+> Chl-a finding in either direction is informative — it either shows the weakness is intrinsic
+> to MSI Chl-a retrieval in Case-2 water, or shows it was specific to the Sado. The turbidity
+> limb is comparatively settled and a confirmation there says less.
 >
-> Turbidity is still processed and reported as a secondary result, labelled as no better
-> powered than the original. The quotation itself is unaffected and stays verbatim.
+> Match-up counts informed which limb we can estimate precisely, but **N is a methods detail,
+> not a result.** It belongs in the Study's methodology and the Outcome's limitations, never
+> in the Outcome's conclusion. The Outcome reports agreement statistics and what they mean
+> for the verdict — not how many points went into them.
+>
+> Turbidity is still processed and reported as a secondary result. The quotation itself is
+> unaffected and stays verbatim.
 
 ## Publication note
 

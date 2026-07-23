@@ -258,17 +258,49 @@ load-bearing.
 
 ### Realised match-ups (±2 h, footprint-verified), from `02_data_clean.py`
 
-| Quantity | Usable observations | **Matched** | vs original N = 19–21 |
-|---|---|---|---|
-| Chlorophyll-a | 1154 | **53** | ~2.5× better |
-| SPM | 1236 | **61** | ~3× better |
-| Secchi depth | 1154 | **59** | — |
-| Phaeophytin-a | 892 | **47** | — |
-| Turbidity | 279 | **15** | **worse** |
+| Quantity | Usable observations | **Matched** |
+|---|---|---|
+| Chlorophyll-a | 1154 | **53** |
+| SPM | 1236 | **61** |
+| Secchi depth | 1154 | **59** |
+| Phaeophytin-a | 892 | **47** |
+| Turbidity | 279 | **15** |
 
 Match rate is ~5 % throughout, set by cloud-free Sentinel-2 revisit against roughly monthly
 sampling. These remain an **upper bound** — per-pixel quality screening in `03` will reduce
 them further.
+
+### What the N comparison does and does not mean — READ BEFORE DRAFTING
+
+Earlier revisions of this note described 53 Chl-a match-ups as "~2.5× better" than the
+original study's 19–21. **That framing is wrong and must not reach the chain.** We are in a
+different estuary over a different decade; the two counts are not measuring the same thing.
+
+| The comparison **is** valid for | The comparison is **not** valid for |
+|---|---|
+| Stating how well *our own* Westerschelde estimate is constrained | Claiming our result supersedes or corrects theirs |
+| Justifying which limb we anchor on, since it is the limb we can estimate most precisely | Claiming we supplied "the more complete set of match-ups" the paper asked for |
+| Reporting our own statistical power honestly in the Outcome | Any statement about Chl-a retrieval **in the Sado** |
+
+The decisive point: the quoted sentence asks for a more complete set of match-ups **for the
+Sado**. Our 53 Westerschelde match-ups do not answer that call — they answer a *generalised*
+version of it. Nobody can answer the literal call with open data, which is the whole reason
+the site moved. Saying otherwise would be an overclaim, and the paper's authors would be
+right to object.
+
+**A second confound, from the period.** The original N = 19–21 spans ~1.5 years; our 53 spans
+10.5 years. A decade of match-ups samples far more environmental variance — nutrient-policy
+change in the Scheldt, shifting phytoplankton community composition, S2A-only versus
+S2A+S2B, and successive processing baselines. A lower R² over ten years does **not**
+necessarily mean worse retrieval than a higher R² over eighteen months; it can simply mean a
+wider range of conditions was sampled. Pooling a decade into a single agreement statistic is
+itself a deviation from the original method and must be declared.
+
+**Mitigation — stratify.** `03_analysis.py` should report the Chl-a agreement statistics
+twice: once over the full 2016–2026 period, and once over a **2018–2020 subset matching the
+original window**. The subset will be underpowered (13–16 match-ups, comparable to the
+paper's own N), but reporting both partially separates the *site* effect from the *period*
+effect. Neither number alone can do that.
 
 ### The chain anchor is settled: Chl-a
 
@@ -279,10 +311,13 @@ match-ups, *fewer* than the original study's 21, because it exists for barely 2.
 Anchoring there would mean testing a well-supported claim with less evidence than the people
 who made it — the opposite of what a replication is for.
 
-Chlorophyll-a yields 53 against the original ~20. That is the one limb where this replication
-genuinely improves on the original's evidence base, and it is the limb whose quoted sentence
-explicitly asks for exactly that. **Anchor: Chl-a.** Turbidity is still processed and
-reported as a secondary result, honestly labelled as no better powered than the original.
+Chlorophyll-a yields 53. Stated carefully — and per the section above, this is a claim about
+*our* study, not a comparison of evidence bases — Chl-a is the limb whose Westerschelde
+agreement statistic we can estimate most precisely, and it is the limb the original authors
+themselves flagged as uncertain. Both make it the right thing to anchor an atomic claim on.
+
+**Anchor: Chl-a.** Turbidity is still processed and reported as a secondary result, labelled
+as resting on fewer match-ups than the original study had.
 
 The claim under test is the second sentence of `01_quote.md`: that for Chl-a, further
 research with a more complete set of match-ups is needed. This replication supplies that
