@@ -29,12 +29,20 @@
 # `nanopubs/drafts/00b_in_situ_source_scan.md` for the full source scan and the
 # frozen design decision.
 #
-# **Credentials (Sentinel-2 only).**
+# **Credentials (Sentinel-2 only).** Neither is needed by *this* notebook —
+# scene discovery below is anonymous. They are needed to download granules.
 #
-# - Register free at <https://dataspace.copernicus.eu/>.
-# - Export `CDSE_USERNAME` and `CDSE_PASSWORD` in your shell, or place them in
-#   a local `.env` (git-ignored).
-# - In CI, the corresponding secrets are `CDSE_USERNAME` / `CDSE_PASSWORD`.
+# - **Preferred, S3.** Generate a key pair at
+#   <https://eodata-s3keysmanager.dataspace.copernicus.eu/> and export
+#   `CDSE_S3_ACCESS_KEY` / `CDSE_S3_SECRET_KEY`. Granules are then fetched by
+#   `scripts/fetch_granules.py`, which pulls only the scenes that participate in
+#   a match-up. This is the route to use for volume, and it is unaffected by
+#   two-factor authentication on the account.
+# - **Alternative, password grant.** Export `CDSE_USERNAME` / `CDSE_PASSWORD`
+#   for the token exchange at the bottom of this notebook. Fails if the account
+#   has 2FA/TOTP enabled.
+#
+# In CI the secrets are `CDSE_S3_ACCESS_KEY` / `CDSE_S3_SECRET_KEY`.
 #
 # The Rijkswaterstaat half runs without any credential, so a fresh clone can
 # always reproduce the in situ reference even before Copernicus access is set up.

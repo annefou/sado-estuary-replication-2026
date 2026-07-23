@@ -32,6 +32,7 @@ ipykernel = "*"
 snakemake = "*"
 # --- data access ---
 requests = "*"              # Rijkswaterstaat DDAPI 2.0 + Copernicus Data Space OData
+boto3 = "*"                 # Copernicus S3 (eodata) granule download — scripts/fetch_granules.py
 # --- geospatial / EO ---
 netcdf4 = "*"               # NetCDF I/O — preferred over .npz for arrays (see DOMAIN.md)
 rasterio = "*"              # Sentinel-2 granule raster I/O
