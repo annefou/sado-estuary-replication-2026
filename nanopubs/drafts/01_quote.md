@@ -67,24 +67,31 @@ phrase here. Leave empty for a single short quote.
 Why this quote matters and what the replication tests. Connect the paper's claim to the work this repo does. Don't repeat the quote.
 
 ```
-The abstract hedges; this sentence does not. It commits to a parameter-dependent verdict, and that is what decides whether Sentinel-2 MSI is operationally usable under the Water Framework Directive: a sensor trustworthy for one variable but not another is a different monitoring proposition from one that simply works. That verdict rests on 19 to 21 match-ups from one estuary over two years. This replication answers the sentence's own closing call, re-running the processing chain over the Westerschelde — a comparably turbid, well-mixed mesotidal estuary — against 217 quality-screened in situ chlorophyll observations spanning the same 2018–2020 window, and tests whether the Chl-a verdict survives a more complete set of match-ups.
+The abstract hedges; this sentence does not. It commits to a parameter-dependent verdict, and that is what decides whether Sentinel-2 MSI is operationally usable under the Water Framework Directive: a sensor trustworthy for one variable but not another is a different monitoring proposition from one that simply works. The sentence is also unusually testable, because it names the evidence that would settle it — a more complete set of match-ups for Chl-a. Claims that specify their own remedy are rare and worth acting on. This replication applies the same processing chains to an independent estuary and an independent in situ reference, and asks whether the parameter-dependent verdict holds.
 ```
 
-Character count: 736 / 800.
+Character count: 695 / 800.
 
-> **Wording is deliberate.** 217 is the count of *in situ observations* that survive
-> Rijkswaterstaat's missing-data screening — **not** the final match-up count. A match-up
-> additionally requires a cloud-free Sentinel-2 scene within ±2 h, so the realised N will be
-> lower and is not known until Phase 3. Do not restate 217 as "217 match-ups" anywhere in the
-> chain; the Outcome reports the realised figure.
+> **No results in this field — deliberately.** The comment says why the quotation is worth
+> testing, not what we found. Sample sizes, match-up counts, R² values and site-specific
+> figures all belong in `05_outcome.md`; the Study field carries scope and method. Keeping
+> numbers out here also makes the field stable: the realised N moved twice during Phase 2
+> (see `00b_in_situ_source_scan.md`), and a comment quoting it would have gone stale each
+> time and risked shipping a figure that was no longer true.
+>
+> It also stays deliberately non-committal on *which* estuary and *which* period, so the
+> still-open design decision on the study period cannot invalidate it.
 
-> **Note on the anchor.** The quotation deliberately carries both limbs of the paper's
-> asymmetry, but the AIDA that follows must be atomic, and it anchors on the **Chl-a** limb —
-> the second sentence — not the turbidity limb. The reason is in
-> `00b_in_situ_source_scan.md`: the Westerschelde has no open turbidity for 2018–2020, but it
-> has 274 co-located Chl-a and SPM match-ups, which is precisely the "more complete set of
-> match-ups" the quoted sentence asks for. The quotation itself is unchanged and stays
-> verbatim.
+> **Note on the anchor — OPEN.** The quotation deliberately carries both limbs of the paper's
+> asymmetry, but the AIDA that follows must be atomic (`CLAUDE.md` § Atomic AIDA), so it can
+> anchor on only one: turbidity or Chl-a.
+>
+> The Chl-a limb was selected on 2026-07-22 because the Westerschelde had no open turbidity
+> data for 2018–2020. That reasoning is **under review**: if the study period extends beyond
+> 2024, turbidity becomes available and the turbidity limb — the paper's stronger, more
+> citable claim — is testable again. Do not draft `02_aida.md` until the period is settled.
+>
+> The quotation itself is unaffected either way, and stays verbatim.
 
 ## Publication note
 
