@@ -67,10 +67,18 @@ phrase here. Leave empty for a single short quote.
 Why this quote matters and what the replication tests. Connect the paper's claim to the work this repo does. Don't repeat the quote.
 
 ```
-The abstract hedges; this sentence does not. It commits to a parameter-dependent verdict, and that is what decides whether Sentinel-2 MSI is operationally usable under the Water Framework Directive: a sensor trustworthy for one variable but not another is a different monitoring proposition from one that simply works. The verdict rests on 19 to 21 match-ups from a single estuary over two years, so it could equally reflect sample size, the atmospheric-correction processor selected, or local optical conditions. This replication re-runs the processing chain over the Sado estuary against an independent in situ reference — the original AQUASado match-ups are available only on request — and tests whether the same verdict emerges.
+The abstract hedges; this sentence does not. It commits to a parameter-dependent verdict, and that is what decides whether Sentinel-2 MSI is operationally usable under the Water Framework Directive: a sensor trustworthy for one variable but not another is a different monitoring proposition from one that simply works. That verdict rests on 19 to 21 match-ups from one estuary over two years. This replication answers the sentence's own closing call, re-running the processing chain over the Westerschelde — a comparably turbid, well-mixed mesotidal estuary — against 274 timestamped Rijkswaterstaat match-ups spanning the same 2018–2020 window, roughly ten times the original sample, and tests whether the Chl-a verdict survives a more complete set of match-ups.
 ```
 
-Character count: 732 / 800.
+Character count: 763 / 800.
+
+> **Note on the anchor.** The quotation deliberately carries both limbs of the paper's
+> asymmetry, but the AIDA that follows must be atomic, and it anchors on the **Chl-a** limb —
+> the second sentence — not the turbidity limb. The reason is in
+> `00b_in_situ_source_scan.md`: the Westerschelde has no open turbidity for 2018–2020, but it
+> has 274 co-located Chl-a and SPM match-ups, which is precisely the "more complete set of
+> match-ups" the quoted sentence asks for. The quotation itself is unchanged and stays
+> verbatim.
 
 ## Publication note
 

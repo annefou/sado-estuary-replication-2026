@@ -155,9 +155,21 @@ set), for March 2018 – March 2020, at six axis stations:
 | Quantity | Code | Records | Verdict |
 |---|---|---|---|
 | Chlorophyll-a | `CONCTTE` / `CHLFa`, µg/l | **274** (27–75 per station) | Usable |
+| Suspended matter (SPM) | `CONCTTE` / `OS`, mg/l | **274** | Usable, co-located with Chl-a |
+| Phaeophytin-a | `CONCTTE` / `FEOa`, µg/l | **219** | Bonus — constrains Chl-a algorithm error |
 | Secchi depth | `ZICHT` | **238** | Usable (transparency proxy) |
 | Turbidity | `TROEBHD` | **0** | Absent in this period |
 | Light extinction | `EXTINCTE` | **0** | Absent at these stations |
+
+**Note on the SPM code.** Rijkswaterstaat files suspended matter as parameter `OS`
+("Onopgeloste stoffen", undissolved solids), **not** under any label containing *zwevende
+stof* — that phrase is reserved for contaminants measured *in* the suspended-matter phase
+(`MASSFTE`, mg/kg). A search on the obvious Dutch term returns nothing and wrongly suggests
+SPM is absent. The parameter enumeration under `CONCTTE` (203 distinct parameters at
+Hansweert) is the reliable way to find it.
+
+SPM lands on exactly the same 274 sampling occasions as Chl-a, so **two of the paper's four
+parameters** are testable here, from co-located samples, with no extra field effort.
 
 Two properties make the chlorophyll records genuinely usable rather than merely present:
 
@@ -193,7 +205,7 @@ needed, with a more complete set of match-ups."* A replication carrying ~274 Chl
 against the original ~20 **is** the more complete set of match-ups the authors asked for. The
 already-verified verbatim quote supports this anchoring unchanged.
 
-Three ways forward, in preference order:
+Three ways forward were put to the user, in preference order:
 
 1. **Westerschelde, anchor on the Chl-a limb, keep the 2018–2020 period.** Answers the
    paper's own stated call. Turbidity limb left untested and declared as such.
@@ -201,6 +213,31 @@ Three ways forward, in preference order:
    correspondence with the original study.
 3. **Add the Oosterschelde or the Belgian coastal zone** as a second site to recover the
    turbidity limb alongside the Westerschelde Chl-a limb.
+
+## DESIGN FROZEN — 2026-07-22
+
+**Option 1 selected by A. Fouilloux.** The replication is now defined as:
+
+| | |
+|---|---|
+| **Type** | Replication Study (different site, different in situ reference; method held constant) |
+| **Site** | Westerschelde, Netherlands — mesotidal, well-mixed, turbid; LifeWatch ERIC member state |
+| **Stations** | 6 estuary-axis stations, Vlissingen (mouth) → Schaar van Ouden Doel (Belgian border) |
+| **Period** | March 2018 – March 2020 — the same window as the original study |
+| **In situ reference** | Rijkswaterstaat DDAPI 2.0, open, no API key |
+| **Parameters tested** | Chl-a (`CONCTTE`/`CHLFa`) and SPM (`CONCTTE`/`OS`), 274 match-up candidates each |
+| **Supporting** | Phaeophytin-a (219), Secchi depth (238) |
+| **Not tested** | Turbidity and aCDOM — no open data at this site for this period; to be declared explicitly in the Outcome's limitations |
+| **Chain anchor** | The **Chl-a** limb of the quoted sentence, not the turbidity limb |
+
+The claim under test is the second sentence of `01_quote.md`: that for Chl-a, further
+research with a more complete set of match-ups is needed. This replication supplies that
+set — roughly ten times the original N — and reports whether the paper's weak Chl-a
+performance persists when sample size is no longer the binding constraint.
+
+Honest framing required in the Outcome (`DOMAIN.md` § Honest negative results): a different
+estuary is a different optical regime, so a divergent Chl-a result is evidence about
+*generalisability*, not automatically evidence that the original analysis was wrong.
 
 ## Reproducing this scan
 

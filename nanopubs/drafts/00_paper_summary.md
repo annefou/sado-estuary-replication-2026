@@ -88,11 +88,17 @@ against a different reference dataset.
 
 What *is* openly reproducible is the satellite half of the pipeline: Sentinel-2 L1C is
 free from the Copernicus Data Space Ecosystem, and all three AC processors and every
-bio-optical algorithm in Table 2 are published with their coefficients. So the replication
-re-runs the processing chain over the same estuary and period and tests the paper's
-*relative* claims — turbidity retrieved well, Chl-a poorly, Acolite biased high — using an
-independent in situ reference. That is a change of data source with the method held
-constant, which is a Replication Study, not a Reproduction.
+bio-optical algorithm in Table 2 are published with their coefficients. That is a change of
+data source with the method held constant, which is a Replication Study, not a Reproduction.
+
+**Site (frozen 2026-07-22): the Westerschelde, not the Sado.** The source scan
+(`00b_in_situ_source_scan.md`) established that no open in situ reference exists for the Sado
+over this period at all, so the replication moves to the estuary where the data does exist.
+The Westerschelde is a mesotidal, well-mixed, turbid estuary in a LifeWatch ERIC member
+state, with six Rijkswaterstaat axis stations supplying **274 co-located Chl-a and SPM
+match-up candidates over the very same March 2018 – March 2020 window** — roughly ten times
+the original N. Turbidity and aCDOM are unavailable there for that period and are declared
+untested.
 
 Two open decisions, flagged rather than assumed (see "Notes" below): which independent
 in situ source to validate against, and whether to request the original AQUASado data
@@ -116,8 +122,12 @@ scan note; the design choice is not yet frozen.
   however, with challenges … such as Chl-a"). The Conclusions sentence is sharper and is
   the better anchor. Whatever is chosen, the AIDA sentence must stay **atomic** — "turbidity
   is retrieved accurately" and "Chl-a is not" are *two* empirical findings. Per `CLAUDE.md`
-  § Atomic AIDA, that means either two AIDA nanopubs on two Claims, or picking one. The
-  turbidity limb (R² = 0.84) is the stronger, more citable single claim.
+  § Atomic AIDA, that means either two AIDA nanopubs on two Claims, or picking one.
+  ~~The turbidity limb (R² = 0.84) is the stronger, more citable single claim.~~
+  **Superseded 2026-07-22:** the anchor is the **Chl-a** limb. The Westerschelde has no open
+  turbidity for 2018–2020, and the Chl-a limb's closing clause ("with a more complete set of
+  match-ups") is exactly what 274 match-ups supply. See `00b_in_situ_source_scan.md`
+  § DESIGN FROZEN.
 - **PDF hazard — duplicated text layer.** This PDF embeds a leftover
   *"Remote Sens. 2021, 13, x FOR PEER REVIEW … of 30"* layer alongside the published text,
   so many passages appear **twice** in extraction, with different line breaks and hyphenation.
