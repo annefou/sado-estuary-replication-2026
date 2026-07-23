@@ -67,6 +67,37 @@ So the design is:
 Acolite (RBINS, GPLv3) and C2RCC (inside ESA SNAP) carry no such restriction and can both be
 baked into the published image and archived on Zenodo.
 
+### How much does a Polymer-free public image actually cost us?
+
+Less than it first appears. From `00_paper_summary.md`, **every chain the original study
+selected for its time series is C2RCC-based**: `cT443` (aCDOM), `cGS` (Chl-a), `cN740` (SPM),
+`cN783` (turbidity). Polymer appears in the paper only as one arm of the three-way
+atmospheric-correction *intercomparison*, where it was best-overall for aCDOM (R² 0.608) and
+SPM (R² 0.57).
+
+For this replication specifically:
+
+| Component | Needs Polymer? |
+|---|---|
+| **Chl-a limb — the frozen chain anchor** (best chain `cGS` = AC-C2RCC + Gons 2005) | **No** |
+| SPM time-series chain (`cN740` = AC-C2RCC + Nechad 740) | **No** |
+| Three-way AC processor intercomparison (incl. "Acolite is biased high") | **Yes** |
+
+So the **public GHCR image reproduces the headline analysis end-to-end, turnkey**. The
+claim this chain is anchored on does not touch Polymer at all. Only the processor
+intercomparison — a secondary finding — needs the opt-in environment.
+
+That is a comfortable place to land: the restricted component sits outside the critical path,
+and its absence from the public image degrades breadth, not the central result.
+
+### If full turnkey coverage is wanted anyway
+
+§10 forbids disclosure "without the prior written consent of Hygeos" — which means consent
+*can* be granted. Asking Hygeos for written permission to redistribute Polymer inside a
+public, non-commercial replication image is a reasonable request, and a "yes" would remove
+the caveat entirely. Worth doing in parallel; do not block on it, and do not ship a
+Polymer-bearing public image before written consent is in hand.
+
 ## Version choice — v4.12 is *not* a safe default
 
 The original study used **Polymer v4.12**. Matching it sounds like the conservative choice for
