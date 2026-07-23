@@ -116,8 +116,13 @@ def run_acolite(safe_dir: Path, out_dir: Path) -> Path:
         "l2w_parameters=rhow_*\n"
         "s2_target_res=10\n"
     )
+    # --nogfx skips the matplotlib import entirely (verified against
+    # launch_acolite.py at tag 20260421.0) — cleaner and safer for a headless
+    # container than relying on the Agg-backend fallback.
     subprocess.run(
-        ["acolite", "--cli", "--settings", str(settings)], check=True, capture_output=True
+        ["acolite", "--cli", "--nogfx", "--settings", str(settings)],
+        check=True,
+        capture_output=True,
     )
     return out_dir
 

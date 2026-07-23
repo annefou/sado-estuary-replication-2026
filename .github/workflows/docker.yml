@@ -4,6 +4,15 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+  pull_request:
+    # Exercise the build early when anything that affects the image changes,
+    # so a broken Dockerfile fails on the PR rather than silently at release
+    # time. This job builds but never pushes.
+    paths:
+      - Dockerfile
+      - pixi.toml
+      - pixi.lock
+      - .github/workflows/docker.yml
 
 env:
   REGISTRY: ghcr.io
@@ -11,7 +20,35 @@ env:
   ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
 
 jobs:
+  # Build-only smoke test on PRs: proves the image (SNAP + Acolite + pixi env)
+  # still builds, and that gpt and acolite resolve on PATH inside it. No push,
+  # no registry credentials, no readiness guard.
+  build-test:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: replication:pr-${{ github.event.pull_request.number }}
+
+      - name: Smoke-test the atmospheric-correction tools
+        run: |
+          img=replication:pr-${{ github.event.pull_request.number }}
+          echo "== gpt (SNAP / C2RCC) =="
+          docker run --rm "$img" gpt -h >/dev/null && echo "gpt OK"
+          echo "== acolite =="
+          docker run --rm "$img" sh -c 'command -v acolite' && echo "acolite on PATH"
+          echo "== analysis core imports + tests =="
+          docker run --rm "$img" pixi run -e tests python -m pytest tests/test_analysis_core.py tests/test_matchup_stats.py -q
+
   build-and-push:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
