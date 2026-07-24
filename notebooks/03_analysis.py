@@ -59,8 +59,16 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path("../scripts").resolve()))
-from analysis_core import chla_gons, extract_window, station_rowcol, window_reflectance
+from analysis_core import (
+    chla_gons,
+    coord_index,
+    extract_window,
+    nearest_band,
+    open_acolite_l2w,
+    window_reflectance,
+)
 from matchup_stats import stratified_statistics
+from pyproj import Transformer
 
 INTERIM_DIR = Path("../data/interim")
 GRANULE_DIR = Path("../data/raw/s2")
@@ -163,30 +171,45 @@ def run_c2rcc(
 # %% [markdown]
 # ## 2 + 3. Extract windows and retrieve Chl-a
 #
-# `open_corrected` returns, per band, the full `rho_w` array plus a validity mask
-# (water AND not cloud/shadow/glint AND AC-succeeded). Reading corrected output is
-# processor-specific; that adapter lives with the processor call and is stubbed
-# here until the container run wires it.
+# `open_acolite_l2w` (in `analysis_core`, structure verified by the AC probe)
+# returns a `CorrectedScene`: `rhow` bands keyed by wavelength, a validity mask
+# from `l2_flags`, and the UTM `x`/`y` coordinates. The Gons chain needs 665, 705
+# and 783 nm; Acolite labels the red-edge band 704, so bands are matched by
+# **nearest wavelength** rather than exact name (also robust across S2A/B/C).
 
 # %%
-def chla_for_scene(corrected, stations: pd.DataFrame) -> pd.DataFrame:
-    """Per-station Chl-a from one corrected scene, using the tested core."""
-    band_arrays, valid_mask, dataset = corrected  # from the processor adapter
+GONS_TARGETS_NM = (665, 705, 783)
+
+
+def chla_for_scene(scene, stations: pd.DataFrame) -> pd.DataFrame:
+    """Per-station Chl-a from one CorrectedScene, using the tested core."""
+    # Resolve the three Gons bands once (nearest available wavelength).
+    keys = {target: nearest_band(scene.rhow, target) for target in GONS_TARGETS_NM}
+    band_arrays = {str(target): scene.rhow[key] for target, key in keys.items()}
+    to_utm = Transformer.from_crs("EPSG:4326", f"EPSG:{scene.epsg}", always_xy=True)
+
     rows = []
     for station in stations.itertuples():
+        easting, northing = to_utm.transform(station.lon, station.lat)
+        row, col = coord_index(scene.x, scene.y, easting, northing)
         try:
-            row, col = station_rowcol(dataset, station.lon, station.lat)
-            extract = extract_window(band_arrays, valid_mask, row, col)
+            extract = extract_window(band_arrays, scene.valid, row, col)
         except ValueError:
-            continue  # off-edge or unreadable -> not a match-up
+            continue  # window runs off the scene edge -> not a match-up
         if extract.n_valid == 0:
             continue
-        rho = {b: window_reflectance(extract, b) for b in ("B04", "B05", "B07")}
+        rho = {t: window_reflectance(extract, str(t)) for t in GONS_TARGETS_NM}
         chla = float(
-            chla_gons(np.array([rho["B04"]]), np.array([rho["B05"]]), np.array([rho["B07"]]))[0]
+            chla_gons(np.array([rho[665]]), np.array([rho[705]]), np.array([rho[783]]))[0]
         )
         rows.append(
-            {"station": station.station, "chla_satellite": chla, "n_valid_pixels": extract.n_valid}
+            {
+                "station": station.station,
+                "time": station.time,
+                "chla_satellite": chla,
+                "n_valid_pixels": extract.n_valid,
+                "processor": scene.processor,
+            }
         )
     return pd.DataFrame(rows)
 

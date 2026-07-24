@@ -89,6 +89,107 @@ def window_reflectance(extract: WindowExtract, band: str) -> float:
 
 
 # --------------------------------------------------------------------------- #
+# Corrected-scene adapter — normalises each processor's output into one shape.
+#
+# The probe (ac-probe.yml) revealed the real Acolite L2W layout, which this reads:
+#   * dims (y, x) on the native S2 UTM grid (EPSG:32631)
+#   * water-leaving reflectance bands named `rhow_<wavelength_nm>` — for S2A:
+#     rhow_443/492/560/665/704/740/783/833/865/1614/2202. NOTE 704, not 705, and
+#     S2B/S2C differ slightly, so bands are selected by NEAREST wavelength, never
+#     by exact string.
+#   * an integer `l2_flags` quality mask (0 = usable).
+#   * 1-D `x` (easting) and `y` (northing) coordinates for station lookup.
+# --------------------------------------------------------------------------- #
+
+
+@dataclass(frozen=True)
+class CorrectedScene:
+    """One atmospherically-corrected scene, processor-agnostic.
+
+    `rhow` maps band-centre wavelength (nm) -> full 2-D reflectance array on the
+    scene's UTM grid. `valid` is the full-scene usability mask. `x`/`y` are the
+    1-D UTM easting/northing coordinates; `epsg` their CRS.
+    """
+
+    rhow: dict[int, np.ndarray]
+    valid: np.ndarray
+    x: np.ndarray
+    y: np.ndarray
+    epsg: int
+    processor: str
+
+
+def nearest_band(rhow: dict[int, np.ndarray], target_nm: int, *, tol_nm: int = 15) -> int:
+    """Wavelength key of `rhow` closest to `target_nm`; raise if none within tol.
+
+    Guards against silently pairing, say, a 665 nm request with an 833 nm band
+    when the expected band is missing — that would be a wrong result, not a
+    near-miss. Sentinel-2A vs 2B/2C band centres differ by only a few nm, so the
+    default 15 nm tolerance absorbs that while rejecting genuine gaps.
+    """
+    if not rhow:
+        raise ValueError("no rhow bands available")
+    key = min(rhow, key=lambda w: abs(w - target_nm))
+    if abs(key - target_nm) > tol_nm:
+        raise ValueError(f"no rhow band within {tol_nm} nm of {target_nm} (nearest {key})")
+    return key
+
+
+def coord_index(x: np.ndarray, y: np.ndarray, easting: float, northing: float) -> tuple[int, int]:
+    """(row, col) of the grid cell nearest a UTM point. row indexes y, col indexes x."""
+    row = int(np.argmin(np.abs(np.asarray(y) - northing)))
+    col = int(np.argmin(np.abs(np.asarray(x) - easting)))
+    return row, col
+
+
+def open_acolite_l2w(path, *, processor: str = "Acolite") -> CorrectedScene:
+    """Read an Acolite L2W NetCDF into a CorrectedScene. I/O — covered by the
+    in-container integration run, not the offline unit tests.
+
+    l2_flags == 0 marks usable water pixels; non-finite reflectance is also
+    excluded so downstream window averaging never sees a fill value.
+    """
+    import re
+
+    import xarray as xr
+
+    dataset = xr.open_dataset(path)
+    rhow = {
+        int(re.match(r"rhow_(\d+)", name).group(1)): dataset[name].values
+        for name in dataset.data_vars
+        if re.match(r"rhow_(\d+)$", name)
+    }
+    if not rhow:
+        raise ValueError(f"{path} has no rhow_* bands — not an Acolite L2W product?")
+
+    flags = dataset["l2_flags"].values if "l2_flags" in dataset else np.zeros_like(
+        next(iter(rhow.values())), dtype="int32"
+    )
+    finite = np.all([np.isfinite(band) for band in rhow.values()], axis=0)
+    valid = (flags == 0) & finite
+
+    epsg = _epsg_from_acolite(dataset)
+    return CorrectedScene(
+        rhow=rhow,
+        valid=valid,
+        x=dataset["x"].values,
+        y=dataset["y"].values,
+        epsg=epsg,
+        processor=processor,
+    )
+
+
+def _epsg_from_acolite(dataset) -> int:
+    """Best-effort EPSG from an Acolite product's UTM proj4 string; default 32631."""
+    proj4 = str(dataset.attrs.get("proj4_string", ""))
+    zone_match = __import__("re").search(r"zone=(\d+)", proj4)
+    south = "+south" in proj4
+    if zone_match:
+        return (32700 if south else 32600) + int(zone_match.group(1))
+    return 32631  # Westerschelde default (UTM 31N)
+
+
+# --------------------------------------------------------------------------- #
 # Bio-optical algorithms — transcribed from Sent et al. (2021) Table 2.
 #
 # These operate on rho_w (water-leaving reflectance), the output of the
