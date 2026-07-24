@@ -212,16 +212,24 @@ def score(matched: pd.DataFrame) -> dict:
 
 
 # %% [markdown]
-# ## Driver
+# ## Driver — resumable, per-scene checkpointed
 #
-# For each match-up scene: correct with Acolite, read the L2W product into a
-# `CorrectedScene`, retrieve Chl-a at each station whose in situ sample falls
-# within ±2 h, then delete the corrected product (storage policy above) unless it
-# is in `KEEP_FULL_SCENES`. Match-up rows are joined to the in situ Chl-a and
-# scored. Gated on Acolite being present, so the notebook is import-safe outside
-# the container.
+# For each match-up scene: correct with Acolite, read the L2W into a
+# `CorrectedScene`, retrieve Chl-a at each station whose in situ sample pairs with
+# it, **write that scene's retrievals to `results/partial/<id>.parquet`**, then
+# delete the corrected product (windows-only storage).
+#
+# The per-scene checkpoint makes the run **resumable**: a scene whose partial file
+# already exists is skipped, so an interrupted run (VM timeout, kill) loses at most
+# the one scene in flight and re-running continues where it stopped. The final
+# `chla_satellite_acolite.parquet` is the concatenation of all partials.
+# Gated on Acolite being present, so the notebook is import-safe without it.
 
 # %%
+PARTIAL_DIR = RESULTS_DIR / "partial"
+PARTIAL_DIR.mkdir(parents=True, exist_ok=True)
+
+
 def l2w_path(out_dir: Path) -> Path:
     """The single L2W NetCDF Acolite writes into a run directory."""
     hits = sorted(out_dir.glob("*_L2W.nc"))
@@ -234,32 +242,40 @@ def l2w_path(out_dir: Path) -> Path:
 if HAVE_ACOLITE:
     matchups = pd.read_parquet(INTERIM_DIR / "matchups_westerschelde.parquet")
     chl = matchups[matchups["quantity"] == "chlorophyll_a"].copy()
-    in_situ = (
-        pd.read_parquet(RAW_DIR / "rws_in_situ_westerschelde.parquet")
-        if (RAW_DIR := Path("../data/raw")).exists()
-        else pd.DataFrame()
-    )
-    print(f"{chl['id'].nunique()} scenes to correct for the Acolite Chl-a chain")
+    scenes = chl.drop_duplicates("id")
+    done = {p.stem for p in PARTIAL_DIR.glob("*.parquet")}
+    print(f"{len(scenes)} Chl-a scenes; {len(done)} already checkpointed, {len(scenes) - len(done)} to do")
 
-    retrievals = []
-    for scene in chl.drop_duplicates("id").itertuples():
+    for n, scene in enumerate(scenes.itertuples(), start=1):
+        if scene.id in done:
+            continue
         safe = next(GRANULE_DIR.rglob(f"{scene.name}"), None)
         if safe is None:
-            print(f"  granule missing, skipping: {scene.name}")
+            print(f"  [{n}/{len(scenes)}] granule missing, skipping: {scene.name}", flush=True)
             continue
         out_dir = CORRECTED_DIR / scene.id
-        run_acolite(safe, out_dir)
-        corrected = open_acolite_l2w(l2w_path(out_dir), processor="Acolite 20260421.0")
+        try:
+            run_acolite(safe, out_dir)
+            corrected = open_acolite_l2w(l2w_path(out_dir), processor="Acolite 20260421.0")
+            scene_stations = chl[chl["id"] == scene.id][["station", "lon", "lat", "time"]]
+            result = chla_for_scene(corrected, scene_stations)
+            # Atomic checkpoint: write to a temp then rename, so a kill mid-write
+            # cannot leave a truncated partial that resume would trust.
+            tmp = PARTIAL_DIR / f".{scene.id}.tmp.parquet"
+            result.to_parquet(tmp, index=False)
+            tmp.rename(PARTIAL_DIR / f"{scene.id}.parquet")
+            print(f"  [{n}/{len(scenes)}] {scene.name}: {len(result)} retrieval(s)", flush=True)
+        except Exception as exc:  # one bad scene must not abort the whole run
+            print(f"  [{n}/{len(scenes)}] FAILED {scene.name}: {type(exc).__name__}: {exc}", flush=True)
+        finally:
+            if scene.name not in KEEP_FULL_SCENES:
+                shutil.rmtree(out_dir, ignore_errors=True)  # windows kept, scene not
 
-        # Stations whose in situ Chl-a sample pairs with THIS scene (from 02).
-        scene_stations = chl[chl["id"] == scene.id][["station", "lon", "lat", "time"]]
-        retrievals.append(chla_for_scene(corrected, scene_stations))
-
-        if scene.name not in KEEP_FULL_SCENES:
-            shutil.rmtree(out_dir, ignore_errors=True)  # windows kept, scene not
-
-    satellite = pd.concat(retrievals, ignore_index=True) if retrievals else pd.DataFrame()
+    # Concatenate all checkpoints into the final result.
+    partials = [pd.read_parquet(p) for p in sorted(PARTIAL_DIR.glob("*.parquet"))]
+    satellite = pd.concat(partials, ignore_index=True) if partials else pd.DataFrame()
     satellite.to_parquet(RESULTS_DIR / "chla_satellite_acolite.parquet", index=False)
-    print(f"\n{len(satellite)} satellite Chl-a retrievals -> results/chla_satellite_acolite.parquet")
+    print(f"\n{len(satellite)} satellite Chl-a retrievals from {len(partials)} scenes "
+          f"-> results/chla_satellite_acolite.parquet")
 else:
     print("\nSkipped §1–§4: Acolite absent. Run inside the container.")

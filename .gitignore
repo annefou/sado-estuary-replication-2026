@@ -72,6 +72,7 @@ reference/
 # Commit only small, final summary CSVs you deliberately reference in figures.
 results/raw/
 results/logs/
+results/partial/
 results/chla_satellite_*.parquet
 
 # Docker
