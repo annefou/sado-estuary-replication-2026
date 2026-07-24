@@ -19,33 +19,36 @@
 # Ports Sent et al. (2021) faithfully, with deviations flagged. For each match-up
 # scene from `02`:
 #
-# 1. **Atmospheric correction** — Acolite and C2RCC (and Polymer, opt-in) produce
+# 1. **Atmospheric correction** — Acolite (and Polymer, opt-in) produce
 #    water-leaving reflectance `rho_w`.
 # 2. **Extraction** — a 3×3 pixel window at 10 m on the native UTM grid at each
 #    station, with per-pixel QC (water, cloud/shadow/glint, AC-success).
-# 3. **Chl-a retrieval** — the `cGS` chain (C2RCC + Gons et al. 2005), the
-#    replication's anchor.
+# 3. **Chl-a retrieval** — the `aGS` chain (Acolite + Gons et al. 2005), the
+#    replication's anchor. (The paper selected `cGS` = C2RCC + Gons; C2RCC is
+#    excluded here — see `docs/atmospheric-correction-choice.md`.)
 # 4. **Agreement** — R², slope, RMSE, BIAS, APD, RPD vs the Rijkswaterstaat in
 #    situ Chl-a, in log space, over the full record and the 2018–2020 subset.
 #
 # Everything except the atmospheric-correction step (§1) is pure Python in
 # `scripts/analysis_core.py` and covered by `tests/test_analysis_core.py`.
 #
-# ## Everything runs in the container
+# ## Atmospheric correction runs in the container
 #
-# The atmospheric-correction processors are **not** pip/conda-installable Python
-# libraries — they are external programs. This notebook shells out to them, and
-# the `Dockerfile` is what provides them:
+# The AC processors are external programs, not pip/conda libraries; this notebook
+# shells out to them.
 #
-# | Processor | How it is invoked | In the image? |
+# | Processor | How it is invoked | In the public image? |
 # |---|---|---|
-# | Acolite | `python acolite --cli --settings …` | yes (GPL-3.0) |
-# | C2RCC | ESA SNAP `gpt <graph.xml>` | yes (SNAP, GPL-3.0) |
+# | Acolite | `acolite --cli --nogfx --settings …` | yes (GPL-3.0), pure Python |
 # | Polymer | `polymer` via the opt-in pixi feature | **no** — licence; see docs |
 #
-# Outside the container (SNAP and Acolite absent) §1 cannot run, so the notebook
-# detects their absence and stops with a clear message rather than failing
-# obscurely. `docs/polymer-licence-and-version.md` explains the Polymer split.
+# C2RCC (the original study's selected processor) is **not run**: it exists only
+# inside ESA SNAP and crashes natively in-container. Excluded as a declared
+# deviation — see `docs/atmospheric-correction-choice.md`.
+#
+# Outside the container (Acolite absent) §1 cannot run, so the notebook detects
+# its absence and stops with a clear message rather than failing obscurely.
+# `docs/polymer-licence-and-version.md` explains the Polymer opt-in split.
 
 # %%
 from __future__ import annotations
@@ -59,8 +62,16 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path("../scripts").resolve()))
-from analysis_core import chla_gons, extract_window, station_rowcol, window_reflectance
+from analysis_core import (
+    chla_gons,
+    coord_index,
+    extract_window,
+    nearest_band,
+    open_acolite_l2w,
+    window_reflectance,
+)
 from matchup_stats import stratified_statistics
+from pyproj import Transformer
 
 INTERIM_DIR = Path("../data/interim")
 GRANULE_DIR = Path("../data/raw/s2")
@@ -77,7 +88,7 @@ for directory in (CORRECTED_DIR, RESULTS_DIR):
 KEEP_FULL_SCENES: set[str] = set()  # populated once the map scenes are chosen
 
 # %% [markdown]
-# ## Guard: are the correction processors present?
+# ## Guard: is Acolite present?
 
 # %%
 def processor_available(name: str) -> bool:
@@ -85,25 +96,29 @@ def processor_available(name: str) -> bool:
 
 
 HAVE_ACOLITE = processor_available("acolite") or Path("/opt/acolite/launch_acolite.py").exists()
-HAVE_GPT = processor_available("gpt")  # ESA SNAP graph processing tool
 
 print(f"Acolite available : {HAVE_ACOLITE}")
-print(f"SNAP gpt available: {HAVE_GPT}")
-if not (HAVE_ACOLITE and HAVE_GPT):
+if not HAVE_ACOLITE:
     print(
-        "\nAtmospheric-correction processors are not on PATH — this notebook must run\n"
-        "inside the project container (see the Dockerfile). Extraction, the Gons\n"
-        "algorithm and the statistics are unit-tested separately in\n"
-        "tests/test_analysis_core.py and tests/test_matchup_stats.py."
+        "\nAcolite is not on PATH — this notebook must run inside the project\n"
+        "container (see the Dockerfile). Extraction, the Gons algorithm and the\n"
+        "statistics are unit-tested separately in tests/test_analysis_core.py and\n"
+        "tests/test_matchup_stats.py."
     )
 
 # %% [markdown]
 # ## 1. Atmospheric correction (container only)
 #
-# Each processor consumes a `.SAFE` product and writes `rho_w` per band. Acolite
-# is driven by a settings file; C2RCC by a SNAP graph passed to `gpt`. Both are
-# subprocess calls so the notebook stays declarative and the heavy lifting is the
-# external program's.
+# Acolite consumes a `.SAFE` product and writes water-leaving reflectance
+# (`rhow_*`) per band into an L2W NetCDF. Driven by a settings file; the
+# subprocess call keeps the notebook declarative.
+
+# Clip Acolite to the Westerschelde. Without a limit it processes the full
+# 10980x10980 tile — a ~9 GB L2W per scene, impractical over 62 scenes. This box
+# (S, W, N, E) covers all six axis stations (Vlissingen 3.56 E to Schaar van
+# Ouden Doel 4.25 E; 51.35–51.54 N) with margin, cutting each product to tens of MB.
+ESTUARY_LIMIT = "51.30,3.45,51.58,4.35"
+
 
 # %%
 def run_acolite(safe_dir: Path, out_dir: Path) -> Path:
@@ -113,6 +128,7 @@ def run_acolite(safe_dir: Path, out_dir: Path) -> Path:
     settings.write_text(
         f"inputfile={safe_dir}\n"
         f"output={out_dir}\n"
+        f"limit={ESTUARY_LIMIT}\n"
         "l2w_parameters=rhow_*\n"
         "s2_target_res=10\n"
     )
@@ -127,66 +143,48 @@ def run_acolite(safe_dir: Path, out_dir: Path) -> Path:
     return out_dir
 
 
-# C2RCC needs a scene salinity and temperature. The Westerschelde gradient is
-# large, so passing per-scene values (from the nearest-in-time Rijkswaterstaat
-# measurement) beats a single default. These fall back to estuarine averages when
-# no in situ value is available for a scene.
-DEFAULT_SALINITY = 20.0  # practical salinity — estuary-axis average
-DEFAULT_TEMPERATURE = 12.0  # deg C — annual mean; refine per-scene where possible
-
-
-def run_c2rcc(
-    safe_dir: Path,
-    out_dir: Path,
-    *,
-    salinity: float = DEFAULT_SALINITY,
-    temperature: float = DEFAULT_TEMPERATURE,
-    graph: Path = Path("../scripts/c2rcc_graph.xml"),
-) -> Path:
-    """Atmospherically correct one scene with C2RCC via SNAP gpt."""
-    out_dir.mkdir(parents=True, exist_ok=True)
-    target = out_dir / "c2rcc.nc"
-    subprocess.run(
-        [
-            "gpt", str(graph),
-            f"-Pinput={safe_dir}",
-            f"-Poutput={target}",
-            f"-Psalinity={salinity}",
-            f"-Ptemperature={temperature}",
-        ],
-        check=True,
-        capture_output=True,
-    )
-    return target
-
-
 # %% [markdown]
 # ## 2 + 3. Extract windows and retrieve Chl-a
 #
-# `open_corrected` returns, per band, the full `rho_w` array plus a validity mask
-# (water AND not cloud/shadow/glint AND AC-succeeded). Reading corrected output is
-# processor-specific; that adapter lives with the processor call and is stubbed
-# here until the container run wires it.
+# `open_acolite_l2w` (in `analysis_core`, structure verified by the AC probe)
+# returns a `CorrectedScene`: `rhow` bands keyed by wavelength, a validity mask
+# from `l2_flags`, and the UTM `x`/`y` coordinates. The Gons chain needs 665, 705
+# and 783 nm; Acolite labels the red-edge band 704, so bands are matched by
+# **nearest wavelength** rather than exact name (also robust across S2A/B/C).
 
 # %%
-def chla_for_scene(corrected, stations: pd.DataFrame) -> pd.DataFrame:
-    """Per-station Chl-a from one corrected scene, using the tested core."""
-    band_arrays, valid_mask, dataset = corrected  # from the processor adapter
+GONS_TARGETS_NM = (665, 705, 783)
+
+
+def chla_for_scene(scene, stations: pd.DataFrame) -> pd.DataFrame:
+    """Per-station Chl-a from one CorrectedScene, using the tested core."""
+    # Resolve the three Gons bands once (nearest available wavelength).
+    keys = {target: nearest_band(scene.rhow, target) for target in GONS_TARGETS_NM}
+    band_arrays = {str(target): scene.rhow[key] for target, key in keys.items()}
+    to_utm = Transformer.from_crs("EPSG:4326", f"EPSG:{scene.epsg}", always_xy=True)
+
     rows = []
     for station in stations.itertuples():
+        easting, northing = to_utm.transform(station.lon, station.lat)
+        row, col = coord_index(scene.x, scene.y, easting, northing)
         try:
-            row, col = station_rowcol(dataset, station.lon, station.lat)
-            extract = extract_window(band_arrays, valid_mask, row, col)
+            extract = extract_window(band_arrays, scene.valid, row, col)
         except ValueError:
-            continue  # off-edge or unreadable -> not a match-up
+            continue  # window runs off the scene edge -> not a match-up
         if extract.n_valid == 0:
             continue
-        rho = {b: window_reflectance(extract, b) for b in ("B04", "B05", "B07")}
+        rho = {t: window_reflectance(extract, str(t)) for t in GONS_TARGETS_NM}
         chla = float(
-            chla_gons(np.array([rho["B04"]]), np.array([rho["B05"]]), np.array([rho["B07"]]))[0]
+            chla_gons(np.array([rho[665]]), np.array([rho[705]]), np.array([rho[783]]))[0]
         )
         rows.append(
-            {"station": station.station, "chla_satellite": chla, "n_valid_pixels": extract.n_valid}
+            {
+                "station": station.station,
+                "time": station.time,
+                "chla_satellite": chla,
+                "n_valid_pixels": extract.n_valid,
+                "processor": scene.processor,
+            }
         )
     return pd.DataFrame(rows)
 
@@ -216,22 +214,52 @@ def score(matched: pd.DataFrame) -> dict:
 # %% [markdown]
 # ## Driver
 #
-# Wired but gated on the processors being present. The per-processor corrected-
-# output adapter (`open_corrected`) is the remaining container-only piece; it is
-# written during the first in-container run, when the exact Acolite / C2RCC output
-# layout can be read from a real product rather than guessed.
+# For each match-up scene: correct with Acolite, read the L2W product into a
+# `CorrectedScene`, retrieve Chl-a at each station whose in situ sample falls
+# within ±2 h, then delete the corrected product (storage policy above) unless it
+# is in `KEEP_FULL_SCENES`. Match-up rows are joined to the in situ Chl-a and
+# scored. Gated on Acolite being present, so the notebook is import-safe outside
+# the container.
 
 # %%
-if HAVE_ACOLITE and HAVE_GPT:
+def l2w_path(out_dir: Path) -> Path:
+    """The single L2W NetCDF Acolite writes into a run directory."""
+    hits = sorted(out_dir.glob("*_L2W.nc"))
+    if not hits:
+        raise FileNotFoundError(f"no *_L2W.nc in {out_dir}")
+    return hits[0]
+
+
+# %%
+if HAVE_ACOLITE:
     matchups = pd.read_parquet(INTERIM_DIR / "matchups_westerschelde.parquet")
-    chl_matchups = matchups[matchups["quantity"] == "chlorophyll_a"]
-    print(f"{chl_matchups['id'].nunique()} scenes to correct for the Chl-a chain")
-    # for scene in chl_matchups.drop_duplicates("id").itertuples():
-    #     safe = GRANULE_DIR / ... ; corrected = run_c2rcc(safe, CORRECTED_DIR / scene.id)
-    #     ... extract windows, then delete corrected unless scene.name in KEEP_FULL_SCENES
-    raise NotImplementedError(
-        "Container run: wire open_corrected() to the C2RCC/Acolite output layout, "
-        "then loop over scenes. All downstream functions are tested."
+    chl = matchups[matchups["quantity"] == "chlorophyll_a"].copy()
+    in_situ = (
+        pd.read_parquet(RAW_DIR / "rws_in_situ_westerschelde.parquet")
+        if (RAW_DIR := Path("../data/raw")).exists()
+        else pd.DataFrame()
     )
+    print(f"{chl['id'].nunique()} scenes to correct for the Acolite Chl-a chain")
+
+    retrievals = []
+    for scene in chl.drop_duplicates("id").itertuples():
+        safe = next(GRANULE_DIR.rglob(f"{scene.name}"), None)
+        if safe is None:
+            print(f"  granule missing, skipping: {scene.name}")
+            continue
+        out_dir = CORRECTED_DIR / scene.id
+        run_acolite(safe, out_dir)
+        corrected = open_acolite_l2w(l2w_path(out_dir), processor="Acolite 20260421.0")
+
+        # Stations whose in situ Chl-a sample pairs with THIS scene (from 02).
+        scene_stations = chl[chl["id"] == scene.id][["station", "lon", "lat", "time"]]
+        retrievals.append(chla_for_scene(corrected, scene_stations))
+
+        if scene.name not in KEEP_FULL_SCENES:
+            shutil.rmtree(out_dir, ignore_errors=True)  # windows kept, scene not
+
+    satellite = pd.concat(retrievals, ignore_index=True) if retrievals else pd.DataFrame()
+    satellite.to_parquet(RESULTS_DIR / "chla_satellite_acolite.parquet", index=False)
+    print(f"\n{len(satellite)} satellite Chl-a retrievals -> results/chla_satellite_acolite.parquet")
 else:
-    print("\nSkipped §1–§4: correction processors absent. Run inside the container.")
+    print("\nSkipped §1–§4: Acolite absent. Run inside the container.")

@@ -1,64 +1,79 @@
-# Snakefile — orchestrates the replication pipeline end-to-end.
+# Snakefile — orchestrates the Westerschelde replication pipeline.
 #
-# Replace the placeholder rules with your actual replication steps. The
-# canonical pattern is one rule per pipeline stage, and each rule wraps a
-# notebook executed via jupytext (so the notebook stays the source of truth
-# and the Snakefile just sequences them).
+# One rule per notebook, each executed via jupytext so the notebook stays the
+# source of truth. The DAG has two halves:
 #
-# Usage:
-#   snakemake --cores 1                  # run everything
-#   snakemake --cores 1 -n               # dry run
+#   data_download (01) -> data_clean (02)         credential-free, runs anywhere
+#                              |                    (CI runs exactly this prefix)
+#   analysis (03) -> figures (04) / archive (05)   needs the Acolite container
+#                                                   AND the Sentinel-2 granules
+#
+# `snakemake --cores 1` runs the whole DAG — which only completes inside the
+# project container (Acolite on PATH) with the granules present under
+# data/raw/s2 (fetch them with scripts/fetch_granules.py). The Dockerfile CMD is
+# exactly that. In plain CI, run the prep prefix only:
+#
+#   snakemake --cores 1 --until data_clean
+#
+# Granules are NOT a Snakefile rule: fetching them needs Copernicus S3
+# credentials and produces many .SAFE directories, so scripts/fetch_granules.py
+# owns that step. rule analysis processes whatever granules are present and skips
+# scenes whose granule is missing.
 
 NOTEBOOKS = "notebooks"
-DATA = "data"
-RESULTS = "results"
-FIGURES = "figures"
 
 
 rule all:
     input:
-        # Replace with your actual final artefacts:
-        f"{FIGURES}/main_result.png",
-        f"{RESULTS}/summary.csv",
+        "figures/main_result.png",
+        "results/chla_satellite_acolite.parquet",
 
 
-# ---------- 01: Data download ----------
-# Every replication MUST be self-contained: data is downloaded by the notebook,
-# never assumed to exist locally. See CLAUDE.md § Self-contained data.
+# ---------- 01: data download (in situ + S2 scene index; no credentials) ----------
 rule data_download:
     output:
-        f"{DATA}/raw/dataset.zip",
+        "data/raw/rws_in_situ_westerschelde.parquet",
+        "data/raw/s2_l1c_scene_index.parquet",
+        "data/raw/sources.json",
     log:
-        f"{RESULTS}/logs/01_data_download.log",
+        "results/logs/01_data_download.log",
     shell:
-        f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 01_data_download.py 2>&1 | tee ../{{log}}"
+        "cd {NOTEBOOKS} && jupytext --to notebook --execute 01_data_download.py 2>&1 | tee ../{log}"
 
 
-# ---------- 02: Data clean ----------
+# ---------- 02: match-up construction (footprint + ±2 h; no credentials) ----------
 rule data_clean:
     input:
-        f"{DATA}/raw/dataset.zip",
+        "data/raw/rws_in_situ_westerschelde.parquet",
+        "data/raw/s2_l1c_scene_index.parquet",
     output:
-        f"{DATA}/clean/dataset.parquet",
+        "data/interim/matchups_westerschelde.parquet",
+        "data/interim/matchup_summary.csv",
+    log:
+        "results/logs/02_data_clean.log",
     shell:
-        f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 02_data_clean.py"
+        "cd {NOTEBOOKS} && jupytext --to notebook --execute 02_data_clean.py 2>&1 | tee ../{log}"
 
 
-# ---------- 03: Analysis ----------
+# ---------- 03: atmospheric correction + Chl-a retrieval (CONTAINER + granules) ----------
 rule analysis:
     input:
-        f"{DATA}/clean/dataset.parquet",
+        "data/interim/matchups_westerschelde.parquet",
     output:
-        f"{RESULTS}/summary.csv",
+        "results/chla_satellite_acolite.parquet",
+    log:
+        "results/logs/03_analysis.log",
     shell:
-        f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 03_analysis.py"
+        "cd {NOTEBOOKS} && jupytext --to notebook --execute 03_analysis.py 2>&1 | tee ../{log}"
 
 
-# ---------- 04: Figures ----------
+# ---------- 04: figures ----------
 rule figures:
     input:
-        f"{RESULTS}/summary.csv",
+        "results/chla_satellite_acolite.parquet",
     output:
-        f"{FIGURES}/main_result.png",
+        "figures/main_result.png",
+    log:
+        "results/logs/04_figures.log",
     shell:
-        f"cd {{NOTEBOOKS}} && jupytext --to notebook --execute 04_figures.py"
+        "cd {NOTEBOOKS} && jupytext --to notebook --execute 04_figures.py 2>&1 | tee ../{log}"

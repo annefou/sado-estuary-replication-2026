@@ -17,9 +17,40 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 from analysis_core import (  # noqa: E402
     GONS_ASTAR_PHY_665,
     chla_gons,
+    coord_index,
     extract_window,
+    nearest_band,
     window_reflectance,
 )
+
+
+# --- Corrected-scene adapter helpers (Acolite L2W layout from the probe) ---
+
+def test_nearest_band_picks_704_for_705_request():
+    # Acolite labels the S2 red-edge band 704, the paper's algorithm asks for 705.
+    rhow = {665: None, 704: None, 740: None, 783: None}
+    assert nearest_band(rhow, 705) == 704
+    assert nearest_band(rhow, 665) == 665
+    assert nearest_band(rhow, 783) == 783
+
+
+def test_nearest_band_rejects_when_no_band_in_tolerance():
+    rhow = {443: None, 833: None, 2202: None}
+    with pytest.raises(ValueError, match="within 15 nm of 665"):
+        nearest_band(rhow, 665)
+
+
+def test_nearest_band_empty_raises():
+    with pytest.raises(ValueError, match="no rhow bands"):
+        nearest_band({}, 665)
+
+
+def test_coord_index_finds_nearest_cell():
+    x = np.array([568090.0, 568100.0, 568110.0, 568120.0])  # easting, 10 m steps
+    y = np.array([5700390.0, 5700380.0, 5700370.0])  # northing, decreasing
+    # A point closest to x=568110 (col 2), y=5700380 (row 1)
+    row, col = coord_index(x, y, easting=568108.0, northing=5700381.0)
+    assert (row, col) == (1, 2)
 
 
 def _bands(fill: float, shape=(10, 10)) -> dict[str, np.ndarray]:
