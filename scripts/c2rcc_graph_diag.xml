@@ -12,7 +12,13 @@
       gpt scripts/c2rcc_graph_diag.xml -Pinput=<scene.SAFE> -Poutput=<out.nc> \
           -Psalinity=20 -Ptemperature=12
 
-  Region: a ~0.05 deg box around Vlissingen (3.5656 E, 51.4120 N).
+  Region: a 512x512-pixel block in the scene interior. A pixel region is used
+  rather than a geoRegion WKT box because the match-up scenes span two MGRS tiles
+  (T31UES, T31UET) and a lon/lat box near a station can fall at a tile edge, where
+  the subset collapses to near-zero rows and SNAP aborts with
+  "[NodeId: subset] gridHeight >= 2". A central pixel block always has data. The
+  probe only needs the output VARIABLE structure, so the exact location and
+  whether it is land or water is irrelevant.
 -->
 <graph id="c2rcc_msi_diag">
   <version>1.0</version>
@@ -30,7 +36,8 @@
       <sourceProduct refid="read"/>
     </sources>
     <parameters>
-      <geoRegion>POLYGON((3.54 51.39, 3.60 51.39, 3.60 51.43, 3.54 51.43, 3.54 51.39))</geoRegion>
+      <!-- x,y,width,height in 10 m pixels; the scene is 10980x10980. -->
+      <region>5000,5000,512,512</region>
       <copyMetadata>true</copyMetadata>
     </parameters>
   </node>

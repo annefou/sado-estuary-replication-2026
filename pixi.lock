@@ -83,6 +83,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/fonttools-4.63.0-py312h8a5da7c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/freetype-2.14.3-ha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/freexl-2.0.0-h9dce30a_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/gdal-3.12.3-py312h5fc20e3_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/geoarrow-rust-core-0.6.2-py312h0ccc70a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/geos-3.14.1-h480dda7_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/gflags-2.2.2-h5888daf_1005.conda
@@ -745,6 +746,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/fonttools-4.63.0-py312h04c11ed_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/freetype-2.14.3-hce30654_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/freexl-2.0.0-h3ab3353_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/gdal-3.12.3-py312he67821c_4.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/geoarrow-rust-core-0.6.2-py312h232e7c1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/geos-3.14.1-h5afe852_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/gflags-2.2.2-hf9b8971_1005.conda
@@ -1147,6 +1149,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/fonttools-4.63.0-py312h05f76fc_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/freetype-2.14.3-h57928b3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/freexl-2.0.0-hf297d47_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/win-64/gdal-3.12.3-py312h7ee17fb_4.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/geoarrow-rust-core-0.6.2-py312hb0142fd_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/geos-3.14.1-hdade9fe_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/google-crc32c-1.8.0-py312h3d708b0_1.conda
@@ -1372,6 +1375,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/fonttools-4.63.0-py312h8a5da7c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/freetype-2.14.3-ha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/freexl-2.0.0-h9dce30a_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/gdal-3.12.3-py312h5fc20e3_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/geoarrow-rust-core-0.6.2-py312h0ccc70a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/geos-3.14.1-h480dda7_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/gflags-2.2.2-h5888daf_1005.conda
@@ -2038,6 +2042,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/fonttools-4.63.0-py312h04c11ed_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/freetype-2.14.3-hce30654_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/freexl-2.0.0-h3ab3353_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/gdal-3.12.3-py312he67821c_4.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/geoarrow-rust-core-0.6.2-py312h232e7c1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/geos-3.14.1-h5afe852_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/gflags-2.2.2-hf9b8971_1005.conda
@@ -2443,6 +2448,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/fonttools-4.63.0-py312h05f76fc_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/freetype-2.14.3-h57928b3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/freexl-2.0.0-hf297d47_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/win-64/gdal-3.12.3-py312h7ee17fb_4.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/geoarrow-rust-core-0.6.2-py312hb0142fd_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/geos-3.14.1-hdade9fe_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/google-crc32c-1.8.0-py312h3d708b0_1.conda
@@ -2669,6 +2675,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/fonttools-4.63.0-py312h8a5da7c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/freetype-2.14.3-ha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/freexl-2.0.0-h9dce30a_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/gdal-3.12.3-py312h5fc20e3_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/geoarrow-rust-core-0.6.2-py312h0ccc70a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/geos-3.14.1-h480dda7_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/gflags-2.2.2-h5888daf_1005.conda
@@ -3335,6 +3342,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/fonttools-4.63.0-py312h04c11ed_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/freetype-2.14.3-hce30654_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/freexl-2.0.0-h3ab3353_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/gdal-3.12.3-py312he67821c_4.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/geoarrow-rust-core-0.6.2-py312h232e7c1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/geos-3.14.1-h5afe852_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/gflags-2.2.2-hf9b8971_1005.conda
@@ -3741,6 +3749,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/fonttools-4.63.0-py312h05f76fc_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/freetype-2.14.3-h57928b3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/freexl-2.0.0-hf297d47_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/win-64/gdal-3.12.3-py312h7ee17fb_4.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/geoarrow-rust-core-0.6.2-py312hb0142fd_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/geos-3.14.1-hdade9fe_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/google-crc32c-1.8.0-py312h3d708b0_1.conda
@@ -3970,6 +3979,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/fonttools-4.63.0-py312h8a5da7c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/freetype-2.14.3-ha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/freexl-2.0.0-h9dce30a_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/gdal-3.12.3-py312h5fc20e3_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/geoarrow-rust-core-0.6.2-py312h0ccc70a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/geos-3.14.1-h480dda7_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/gflags-2.2.2-h5888daf_1005.conda
@@ -4647,6 +4657,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/fonttools-4.63.0-py312h04c11ed_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/freetype-2.14.3-hce30654_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/freexl-2.0.0-h3ab3353_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/gdal-3.12.3-py312he67821c_4.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/geoarrow-rust-core-0.6.2-py312h232e7c1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/geos-3.14.1-h5afe852_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/gflags-2.2.2-hf9b8971_1005.conda
@@ -5056,6 +5067,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/fonttools-4.63.0-py312h05f76fc_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/freetype-2.14.3-h57928b3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/freexl-2.0.0-hf297d47_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/win-64/gdal-3.12.3-py312h7ee17fb_4.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/geoarrow-rust-core-0.6.2-py312hb0142fd_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/geos-3.14.1-hdade9fe_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/google-crc32c-1.8.0-py312h3d708b0_1.conda
@@ -6173,6 +6185,24 @@ packages:
     - freexl >=2.0.0,<3.0a0
   size: 59299
   timestamp: 1734014884486
+- conda: https://conda.anaconda.org/conda-forge/linux-64/gdal-3.12.3-py312h5fc20e3_4.conda
+  sha256: eee1497ba4ef06e3a99caed392aac529442364523778d89f09896cff2a4790a1
+  md5: 977eac80a6c290fe0e4f687fc8d19d00
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=14
+  - libgdal-core 3.12.3.*
+  - libstdcxx >=14
+  - numpy >=1.23,<3
+  - python >=3.12,<3.13.0a0
+  - python_abi 3.12.* *_cp312
+  license: MIT
+  license_family: MIT
+  purls:
+  - pkg:pypi/gdal?source=hash-mapping
+  run_exports: {}
+  size: 1879373
+  timestamp: 1775928739497
 - conda: https://conda.anaconda.org/conda-forge/linux-64/geoarrow-rust-core-0.6.2-py312h0ccc70a_0.conda
   sha256: 1ab8dcd21ca49b9e1525d4ed908e9c864b7ffc0dc9c34a3f2cf9b911ca773477
   md5: 8aeaa0800a5725dd9435d16553a8a62c
@@ -12956,6 +12986,24 @@ packages:
     - freexl >=2.0.0,<3.0a0
   size: 53378
   timestamp: 1734014980768
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/gdal-3.12.3-py312he67821c_4.conda
+  sha256: bfc301c3ceb98b2afc91b307197c5fcf2caa73a62cd116a6d18c35d6d1d3bb3f
+  md5: 7d03a4229224e99d165b57ef14d27050
+  depends:
+  - __osx >=11.0
+  - libcxx >=19
+  - libgdal-core 3.12.3.*
+  - numpy >=1.23,<3
+  - python >=3.12,<3.13.0a0
+  - python >=3.12,<3.13.0a0 *_cpython
+  - python_abi 3.12.* *_cp312
+  license: MIT
+  license_family: MIT
+  purls:
+  - pkg:pypi/gdal?source=hash-mapping
+  run_exports: {}
+  size: 1820976
+  timestamp: 1775930999602
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/geoarrow-rust-core-0.6.2-py312h232e7c1_0.conda
   sha256: a90a4e5f0248d338c384ce644c7312908c682dc6abafd66cbb7fe75c8a046beb
   md5: 702f27dad627286046d165b9fc3b49a1
@@ -16004,6 +16052,24 @@ packages:
     - freexl >=2.0.0,<3.0a0
   size: 77528
   timestamp: 1734015193826
+- conda: https://conda.anaconda.org/conda-forge/win-64/gdal-3.12.3-py312h7ee17fb_4.conda
+  sha256: a5ed97a3819cbcc5bb830b021e9adec974efb057fd47f58a5d9f74dac598a57d
+  md5: 95dfcbb3c0877b33754aa8b9ade5ed46
+  depends:
+  - libgdal-core 3.12.3.*
+  - numpy >=1.23,<3
+  - python >=3.12,<3.13.0a0
+  - python_abi 3.12.* *_cp312
+  - ucrt >=10.0.20348.0
+  - vc >=14.3,<15
+  - vc14_runtime >=14.44.35208
+  license: MIT
+  license_family: MIT
+  purls:
+  - pkg:pypi/gdal?source=hash-mapping
+  run_exports: {}
+  size: 1749287
+  timestamp: 1775930606465
 - conda: https://conda.anaconda.org/conda-forge/win-64/geoarrow-rust-core-0.6.2-py312hb0142fd_0.conda
   sha256: 097edbd36750e1b99b832e0bf7566bd3aa1bb715a9f43dfa53bdbd6631739d4a
   md5: 07226968f71e8558a0f1facf115b790f

@@ -37,6 +37,8 @@ boto3 = "*"                 # Copernicus S3 (eodata) granule download — script
 netcdf4 = "*"               # NetCDF I/O — preferred over .npz for arrays (see DOMAIN.md)
 rasterio = "*"              # Sentinel-2 granule raster I/O
 libgdal-jp2openjpeg = "*"   # JP2 driver — WITHOUT this rasterio cannot open S2 .jp2 bands
+gdal = "*"                  # osgeo python bindings — Acolite imports osgeo.gdal directly
+                            # (verified: without it Acolite fails "No module named 'osgeo'")
 geopandas = "*"             # station geometry, estuary masks
 pyproj = "*"                # CRS transforms (WGS84 <-> UTM31N for Westerschelde)
 dask = "*"                  # out-of-core scene processing
