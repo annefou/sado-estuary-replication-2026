@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SNAP graph: atmospheric correction of Sentinel-2 MSI L1C with C2RCC, for the
+  Westerschelde replication. Invoked by notebooks/03_analysis.py via:
+
+      gpt scripts/c2rcc_graph.xml -Pinput=<scene.SAFE> -Poutput=<out.nc>
+
+  Operator verified against senbox-org/s3tbx C2rccMsiOperator.java: alias
+  "c2rcc.msi", version 1.2. Parameter names and defaults (salinity, temperature,
+  outputAsRrs, TSMfac/TSMexp, CHLfac/CHLexp, validPixelExpression) are taken from
+  that source, not from memory.
+
+  outputAsRrs=false is deliberate: it makes C2RCC output rho_w (water-leaving
+  reflectance), which is what the paper's Table 2 bio-optical algorithms consume
+  (scripts/analysis_core.py chla_gons). With outputAsRrs=true it would emit Rrs
+  and every algorithm would be off by a factor of pi.
+
+  TWO VALUES NEED PER-SCENE REFINEMENT before the numbers are trusted, and both
+  must be recorded in the Study methodology:
+    * salinity / temperature — set here to estuarine defaults. The Westerschelde
+      salinity gradient is large (~30 at the mouth, near 0 upstream), and
+      Rijkswaterstaat measures both at the same stations, so 03 should ideally
+      pass per-scene, per-station values via -Psalinity= / -Ptemperature=. The
+      graph exposes them as ${salinity} / ${temperature} with fallback defaults.
+    * validPixelExpression — the default below is C2RCC's own; the paper adds
+      IdePix. Per-pixel cloud/shadow/glint masking is applied downstream in 03.
+-->
+<graph id="c2rcc_msi_westerschelde">
+  <version>1.0</version>
+
+  <node id="read">
+    <operator>Read</operator>
+    <parameters>
+      <file>${input}</file>
+    </parameters>
+  </node>
+
+  <node id="c2rcc">
+    <operator>c2rcc.msi</operator>
+    <sources>
+      <sourceProduct refid="read"/>
+    </sources>
+    <parameters>
+      <salinity>${salinity}</salinity>
+      <temperature>${temperature}</temperature>
+      <!-- rho_w, not Rrs — see header. -->
+      <outputAsRrs>false</outputAsRrs>
+      <outputRhown>true</outputRhown>
+      <!-- TSM / CHL factors left at C2RCC 1.2 defaults; the paper does not
+           retune C2RCC's internal IOP->concentration conversion, and this
+           replication uses C2RCC only for the atmospheric correction, deriving
+           Chl-a with Gons downstream rather than from C2RCC's own CHL band. -->
+      <TSMfac>1.06</TSMfac>
+      <TSMexp>0.942</TSMexp>
+      <CHLfac>21.0</CHLfac>
+      <CHLexp>1.04</CHLexp>
+    </parameters>
+  </node>
+
+  <node id="write">
+    <operator>Write</operator>
+    <sources>
+      <sourceProduct refid="c2rcc"/>
+    </sources>
+    <parameters>
+      <file>${output}</file>
+      <formatName>NetCDF4-CF</formatName>
+    </parameters>
+  </node>
+</graph>

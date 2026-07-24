@@ -24,11 +24,25 @@ __pycache__/
 # Environment / OS
 .DS_Store
 .env
+.env.*
+# Credentials must live OUTSIDE this repo (~/.aws/credentials) — Phase 4 archives
+# the source tree to Zenodo and a published secret cannot be unpublished. These
+# patterns are a backstop, not the primary control.
+*.pem
+*.key
+credentials
+credentials.*
+*secret*
+.aws/
 
 # Data — never committed; downloaded on first run
 data/*
 !data/.gitkeep
 !data/README.md
+# Small provenance manifest of the match-up scenes (id, name, tile, cloud, s3path,
+# quantity). Committed so a fresh checkout / CI can fetch the exact granules
+# without re-running notebooks 01+02. The granules themselves stay ignored.
+!data/matchup_scenes.csv
 
 # Prior-chain import cache — never committed; regenerated on demand from
 # the entry URI in CITATION.cff `references:`. The persistent pointer to

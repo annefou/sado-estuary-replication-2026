@@ -1,0 +1,113 @@
+name: AC output probe (diagnostic)
+
+# Reveals the exact variable/band structure of the atmospheric-correction output
+# so notebooks/03_analysis.py's open_corrected() can be written against real
+# products rather than guesses. Manual only — it downloads a ~660 MB granule and
+# runs C2RCC, so it must never fire automatically.
+#
+# Requires two repository secrets (Settings -> Secrets and variables -> Actions):
+#   CDSE_S3_ACCESS_KEY, CDSE_S3_SECRET_KEY
+# Generate them at https://eodata-s3keysmanager.dataspace.copernicus.eu/
+#
+# Result: a "corrected-structure" artifact containing the ncdump/gdalinfo of both
+# C2RCC and Acolite output. Download it, read the rho_w variable names, and wire
+# open_corrected() to them.
+
+on:
+  workflow_dispatch:
+    inputs:
+      scene_index:
+        description: "Row in data/matchup_scenes.csv to probe (0 = first Chl-a scene)"
+        required: false
+        default: "0"
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Fail early if S3 secrets are missing
+        env:
+          KEY: ${{ secrets.CDSE_S3_ACCESS_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::CDSE_S3_ACCESS_KEY / CDSE_S3_SECRET_KEY not set. Add them in repo secrets."
+            exit 1
+          fi
+
+      - name: Build image (load)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: replication:probe
+
+      - name: Pick the scene from the manifest
+        id: pick
+        run: |
+          idx=${{ github.event.inputs.scene_index }}
+          # header + 0-based index -> sed line number
+          line=$(sed -n "$((idx + 2))p" data/matchup_scenes.csv)
+          name=$(echo "$line" | cut -d, -f2)
+          echo "Probing scene: $name"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch the one granule
+        env:
+          CDSE_S3_ACCESS_KEY: ${{ secrets.CDSE_S3_ACCESS_KEY }}
+          CDSE_S3_SECRET_KEY: ${{ secrets.CDSE_S3_SECRET_KEY }}
+        run: |
+          docker run --rm \
+            -e CDSE_S3_ACCESS_KEY -e CDSE_S3_SECRET_KEY \
+            -v "${{ github.workspace }}/data:/app/data" \
+            replication:probe \
+            pixi run python scripts/fetch_granules.py \
+              --quantity chlorophyll_a --limit $(( ${{ github.event.inputs.scene_index }} + 1 ))
+
+      - name: Correct one scene and dump its structure
+        run: |
+          set -x
+          safe=$(find data/raw/s2 -maxdepth 8 -name "${{ steps.pick.outputs.name }}" -type d | head -1)
+          mkdir -p probe-out
+
+          # C2RCC (subset diagnostic graph — fast, same variable structure).
+          docker run --rm -v "${{ github.workspace }}:/app" replication:probe \
+            gpt scripts/c2rcc_graph_diag.xml \
+              -Pinput="$safe" -Poutput=probe-out/c2rcc.nc \
+              -Psalinity=20 -Ptemperature=12 || echo "::warning::C2RCC run failed — capturing logs anyway"
+
+          # Acolite over the same scene.
+          docker run --rm -v "${{ github.workspace }}:/app" replication:probe \
+            acolite --cli --nogfx --settings /dev/stdin <<EOF || echo "::warning::Acolite run failed"
+          inputfile=$safe
+          output=/app/probe-out/acolite
+          l2w_parameters=rhow_*
+          s2_target_res=10
+          EOF
+
+          echo "=== C2RCC output structure ===" | tee probe-out/STRUCTURE.txt
+          docker run --rm -v "${{ github.workspace }}:/app" replication:probe \
+            sh -c 'command -v ncdump >/dev/null && ncdump -h /app/probe-out/c2rcc.nc || pixi run python -c "import xarray as xr; print(xr.open_dataset(\"/app/probe-out/c2rcc.nc\"))"' \
+            2>&1 | tee -a probe-out/STRUCTURE.txt || true
+
+          echo "=== Acolite output files ===" | tee -a probe-out/STRUCTURE.txt
+          find probe-out/acolite -type f 2>/dev/null | tee -a probe-out/STRUCTURE.txt || true
+          for nc in probe-out/acolite/*.nc; do
+            [ -f "$nc" ] || continue
+            echo "--- $nc ---" | tee -a probe-out/STRUCTURE.txt
+            docker run --rm -v "${{ github.workspace }}:/app" replication:probe \
+              pixi run python -c "import xarray as xr; print(xr.open_dataset('/app/$nc'))" \
+              2>&1 | tee -a probe-out/STRUCTURE.txt || true
+          done
+
+      - name: Upload the structure dump
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: corrected-structure
+          path: |
+            probe-out/STRUCTURE.txt
+            probe-out/c2rcc.nc
+          retention-days: 14

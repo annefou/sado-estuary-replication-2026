@@ -8,7 +8,7 @@
 # this file; commit both files in the same commit.
 
 [workspace]
-name = "{{REPO_NAME}}"
+name = "sado-estuary-replication-2026"
 # bioconda hosts snakemake (and downstream rule-engine ecosystem); conda-forge
 # is the priority channel for everything else.
 channels = ["conda-forge", "bioconda"]
@@ -30,6 +30,30 @@ nbclient = "*"
 ipykernel = "*"
 # --- pipeline driver ---
 snakemake = "*"
+# --- data access ---
+requests = "*"              # Rijkswaterstaat DDAPI 2.0 + Copernicus Data Space OData
+boto3 = "*"                 # Copernicus S3 (eodata) granule download — scripts/fetch_granules.py
+# --- geospatial / EO ---
+netcdf4 = "*"               # NetCDF I/O — preferred over .npz for arrays (see DOMAIN.md)
+rasterio = "*"              # Sentinel-2 granule raster I/O
+libgdal-jp2openjpeg = "*"   # JP2 driver — WITHOUT this rasterio cannot open S2 .jp2 bands
+geopandas = "*"             # station geometry, estuary masks
+pyproj = "*"                # CRS transforms (WGS84 <-> UTM31N for Westerschelde)
+dask = "*"                  # out-of-core scene processing
+shapely = "*"               # scene-footprint containment tests in 02
+# --- HEALPix / DGGS archival of derived products (notebook 05) ---
+# healpix-geo, not healpy: geographic data needs WGS84 ellipsoidal corrections.
+# Always NESTED, and always ellipsoid="WGS84" — see DOMAIN.md.
+healpix-geo = "*"           # conda-forge
+zarr = ">=3"                # EOPF Zarr / GRID4EARTH profile requires Zarr v3
+xdggs = "*"                 # DGGS-aware xarray accessors for reading the archive
+
+# Atmospheric-correction processors are NOT conda/pip packages — they are external
+# programs installed by the Dockerfile:
+#   Acolite  (GPL-3.0)  cloned from github.com/acolite/acolite
+#   C2RCC    (GPL-3.0)  ships inside ESA SNAP, invoked via `gpt`
+#   Polymer             opt-in [feature.polymer] only — never in the public image
+# See docs/polymer-licence-and-version.md and notebooks/03_analysis.py.
 # --- replace/extend with the deps your replication needs ---
 # Examples (uncomment as needed):
 # statsmodels = "*"          # GLM/GLMM regression
@@ -47,7 +71,10 @@ snakemake = "*"
 # dask = "*"                 # out-of-core / parallel
 
 # Pip-only deps go in [pypi-dependencies]. Conda-forge is preferred where available.
-# [pypi-dependencies]
+[pypi-dependencies]
+# healpix-resample is PyPI-only (GRID4EARTH); not published on conda-forge.
+# (lon,lat)->HEALPix regridding of the derived products in notebook 05.
+healpix-resample = "*"
 # pygbif = "*"               # GBIF occurrences
 # polytope-client = "*"      # Destination Earth Climate DT
 # earthkit-data = "*"
@@ -66,10 +93,23 @@ pytest = "*"
 # tests and scripts/check_template_drift.py both need it. See nanopubs/templates/.
 rdflib = "*"
 
+# Polymer is NOT open source. Hygeos Terms of Use v2.0 §2/§10 forbid transferring it to
+# third parties, so it must never be baked into the published Docker image or the Zenodo
+# tarball. Keeping it in an opt-in feature means each user installs it directly from Hygeos
+# under their own acceptance of the Terms — which is also what §3 requires, since the licence
+# is granted per-user for the user's own country. See docs/polymer-licence-and-version.md.
+#
+# v4.17.3, not the paper's v4.12: v4.15 added support for Sentinel-2 processing baseline
+# 04.00, whose TOA reflectance offset applies to the reprocessed 2018-2020 archive we use.
+[feature.polymer.pypi-dependencies]
+polymer = { git = "https://github.com/hygeos/polymer.git", tag = "v4.17.3" }
+
 [environments]
 default = { solve-group = "default" }
 docs = { features = ["docs"], solve-group = "default" }
 tests = { features = ["tests"], solve-group = "default" }
+# Opt-in: `pixi run -e polymer ...` enables the third atmospheric-correction chain.
+polymer = { features = ["polymer"], solve-group = "default" }
 
 [tasks]
 run = "snakemake --cores 1"

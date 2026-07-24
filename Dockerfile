@@ -1,20 +1,75 @@
+# Replication container. Bundles the full pipeline INCLUDING the atmospheric-
+# correction processors, which are external programs rather than conda packages:
+#
+#   Acolite  (GPL-3.0)  — cloned from github.com/acolite/acolite
+#   C2RCC    (GPL-3.0)  — ships inside ESA SNAP, invoked via `gpt`
+#
+# Polymer is deliberately NOT installed here: its licence forbids redistribution,
+# so it stays an opt-in pixi feature each user installs from Hygeos themselves.
+# See docs/polymer-licence-and-version.md. This image is therefore safe to make
+# public, and reproduces the headline Chl-a analysis (C2RCC + Gons) turnkey.
+#
+# Multi-stage so the SNAP installer and the Acolite git history do not bloat the
+# final image.
+
+# --------------------------------------------------------------------------- #
+# Stage 1 — fetch SNAP and Acolite
+# --------------------------------------------------------------------------- #
+FROM debian:bookworm-slim AS externals
+
+ARG SNAP_VERSION=11
+ARG ACOLITE_VERSION=20260421.0
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget ca-certificates git && rm -rf /var/lib/apt/lists/*
+
+# ESA SNAP — headless install via the official installer's unattended mode.
+# The installer is ~1 GB; only the installed tree is carried to the final stage.
+RUN wget -q -O /tmp/snap.sh \
+      "https://download.esa.int/step/snap/${SNAP_VERSION}.0/installers/esa-snap_all_linux-${SNAP_VERSION}.0.0.sh" \
+    && sh /tmp/snap.sh -q -dir /opt/snap \
+    && rm /tmp/snap.sh
+
+# Acolite — GPL-3.0, pinned tag, git history dropped.
+RUN git clone --depth 1 --branch "${ACOLITE_VERSION}" \
+      https://github.com/acolite/acolite.git /opt/acolite \
+    && rm -rf /opt/acolite/.git
+
+# --------------------------------------------------------------------------- #
+# Stage 2 — runtime
+# --------------------------------------------------------------------------- #
 FROM ghcr.io/prefix-dev/pixi:0.68.1
 
-LABEL org.opencontainers.image.source="https://github.com/{{REPO_ORG}}/{{REPO_NAME}}"
-LABEL org.opencontainers.image.description="Replication study container for {{REPO_NAME}}"
-LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.source="https://github.com/annefou/sado-estuary-replication-2026"
+LABEL org.opencontainers.image.description="Replication container: Sentinel-2 water-quality retrieval, Westerschelde. Includes Acolite + SNAP/C2RCC; excludes Polymer (licence)."
+LABEL org.opencontainers.image.licenses="MIT AND GPL-3.0"
+
+# SNAP needs a JRE at runtime; Acolite runs on the pixi Python environment.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    default-jre-headless && rm -rf /var/lib/apt/lists/*
+
+COPY --from=externals /opt/snap /opt/snap
+COPY --from=externals /opt/acolite /opt/acolite
+
+# Put SNAP's gpt and an `acolite` shim on PATH so notebook 03's subprocess calls
+# resolve without knowing install locations.
+ENV PATH="/opt/snap/bin:${PATH}"
+RUN printf '#!/bin/sh\nexec pixi run --manifest-path /app/pixi.toml python /opt/acolite/launch_acolite.py "$@"\n' \
+      > /usr/local/bin/acolite && chmod +x /usr/local/bin/acolite
 
 WORKDIR /app
 
-# Install the pinned environment first (separate from source copy so the lock
-# layer is cached across source-only edits).
+# Install the pinned environment first so the lock layer caches across source edits.
 COPY pixi.toml pixi.lock /app/
 RUN pixi install --locked
 
 COPY . /app
 
-# Mount any required credentials at runtime, e.g.:
-#   docker run -v ~/.cdsapirc:/home/mambauser/.cdsapirc {{REPO_NAME}}
-# See data/README.md for per-dataset credential setup.
+# Increase SNAP's tile cache for 10 m full-scene processing.
+RUN sed -i 's/^-Xmx.*/-Xmx6G/' /opt/snap/bin/gpt.vmoptions || true
+
+# Credentials are mounted at runtime, never baked in:
+#   docker run -v ~/.aws/credentials:/root/.aws/credentials:ro <image>
+# See scripts/fetch_granules.py and docs.
 
 CMD ["pixi", "run", "snakemake", "--cores", "1"]
