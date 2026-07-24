@@ -96,9 +96,19 @@ jobs:
       #     path: data/raw
       #     key: input-data-v1
 
-      - name: Run pipeline
+      # The full DAG (analysis/figures) needs the Acolite container and the
+      # Sentinel-2 granules, neither of which exists on a plain runner. So CI:
+      #   1. dry-runs the WHOLE DAG (validates every rule + the graph), then
+      #   2. actually executes the credential-free prep prefix (01 -> 02),
+      #      which fetches the in situ + scene index and builds the match-ups.
+      # See the Snakefile header.
+      - name: Validate the full pipeline DAG (dry run)
         if: steps.guard.outputs.ready == 'true'
-        run: pixi run snakemake --cores 1
+        run: pixi run snakemake --cores 1 -n
+
+      - name: Run the credential-free prep (01 -> 02)
+        if: steps.guard.outputs.ready == 'true'
+        run: pixi run snakemake --cores 1 --until data_clean
 
       - name: Upload results
         if: always() && steps.guard.outputs.ready == 'true'
