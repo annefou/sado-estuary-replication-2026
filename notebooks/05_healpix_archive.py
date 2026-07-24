@@ -156,13 +156,33 @@ def resample_to_cells(
 # %% [markdown]
 # ## Write the GRID4EARTH DGGS Zarr dataset
 
+# %% [markdown]
+# ### Provenance labelling — required for Polymer-derived products
+#
+# Which atmospheric-correction processor produced a given product MUST be recorded
+# in the product's metadata, via the `processor` argument below. This is not
+# cosmetic: Polymer's licence forbids redistributing the *software*, but its
+# *outputs* are ours to publish and archive (Terms of Use §11 —
+# `docs/polymer-licence-and-version.md`). Tagging every artefact with its
+# processor and version keeps that line auditable, so a Polymer **output** in
+# this open archive is never mistaken for the Polymer **tool** (which is not
+# here, by licence). Acolite and C2RCC products are labelled the same way, for
+# uniform provenance.
+
 # %%
 def build_dataset(
     products: dict[str, np.ndarray],
     times: np.ndarray,
+    *,
+    processor: str,
     refinement_level: int = REFINEMENT_LEVEL,
 ) -> xr.Dataset:
-    """Assemble a DGGS-Zarr-conformant Dataset from per-time cell arrays."""
+    """Assemble a DGGS-Zarr-conformant Dataset from per-time cell arrays.
+
+    `processor` names the atmospheric-correction chain and version that produced
+    these products, e.g. "Acolite 20260421.0" or "Polymer 4.17.3" — recorded in
+    the dataset `source` attribute for provenance (see the note above).
+    """
     return xr.Dataset(
         data_vars={
             name: (("time", "cells"), values.astype("float32"))
@@ -185,7 +205,11 @@ def build_dataset(
                 ]
             },
             "title": "Sentinel-2 derived water-quality products, Westerschelde",
-            "source": "Sentinel-2 MSI L1C, atmospherically corrected (Acolite / C2RCC / Polymer)",
+            # Names the exact processor+version, not a vague list, so a Polymer
+            # OUTPUT is never confused with the Polymer TOOL (which the licence
+            # keeps out of this archive). See the provenance note above.
+            "source": f"Sentinel-2 MSI L1C, atmospherically corrected with {processor}",
+            "processor": processor,
             "references": "https://doi.org/10.3390/rs13051043",
         },
     )

@@ -23,6 +23,39 @@ source, and three clauses bind this repository directly:
 | **§5** — "The User shall notify Hygeos of each modification done by it to the source code" | If we patch Polymer, we must tell Hygeos. Prefer configuration over patching. |
 | **§6** — copyright and proprietary notices must be reproduced on every copy | Any vendored file keeps its header. |
 
+## What the licence does NOT restrict — the results are ours
+
+Every clause above governs the **Software**. None governs its **outputs**, and one clause says
+so explicitly:
+
+> **§11 (DATA)** — "Hygeos shall not assume any responsibility toward the ownership and rights
+> on any data processed through the Software."
+
+Hygeos disclaims any claim over the data Polymer produces. Combined with §2's grant to "use
+the Software for the exclusive purpose of scientific research", this means:
+
+**We can freely publish everything Polymer *computes* — water-leaving reflectance (ρw),
+Chl-a, match-up statistics, figures, the Outcome nanopub — even though we can never
+redistribute the Polymer *code*.** The licence governs the tool, not the numbers.
+
+So Polymer is a **first-class scientific input** to this replication:
+
+- The Polymer + Gons (`pGS`) chain's results appear in the figures and Outcome exactly like
+  Acolite's. No licence issue: results, not software.
+- Polymer-derived products in the HEALPix / EOPF-Zarr archive (notebook 05) are output data
+  (§11 → ours), so they archive to Zenodo freely. **Label them** `source: Polymer vX.Y.Z` in
+  the product metadata so an output is never mistaken for redistributable software.
+- The **Acolite** chain is turnkey-reproducible from the public image; the **Polymer** chain's
+  results are published freely, and a reader reproduces *those specific numbers* by running the
+  one opt-in install step (accepting Hygeos's terms as themselves).
+
+Two guardrails that keep the software/results line unambiguous:
+
+1. **Never run Polymer in public CI.** Same reasoning as the public image — keep Polymer
+   *execution* to local / opt-in contexts and publish only the results. Public CI runs Acolite.
+2. **Tag every Polymer-derived artefact** with its Polymer version in metadata, so provenance
+   is traceable and no output is ever confused for the tool.
+
 ### Consequence for the pipeline — we *can* still have Docker
 
 The licence restricts **distribution**, not **containerisation**. The distinction matters and
