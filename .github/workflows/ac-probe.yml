@@ -73,11 +73,11 @@ jobs:
           safe=$(find data/raw/s2 -maxdepth 8 -name "${{ steps.pick.outputs.name }}" -type d | head -1)
           mkdir -p probe-out
 
-          # Diagnostics: which Java does gpt use? SNAP 11 wants Java 11; a newer
-          # system JDK is a prime suspect for the C2RCC JVM segfault.
+          # Diagnostics: confirm gpt now uses the bundled JRE (Java 11), not the
+          # system OpenJDK 21 that was the suspected C2RCC segfault cause.
           echo "=== gpt / Java environment ===" | tee probe-out/STRUCTURE.txt
           docker run --rm replication:probe sh -c \
-            'echo "JAVA_HOME=$JAVA_HOME"; java -version 2>&1; ls -d /opt/snap/jre* 2>/dev/null || echo "no bundled SNAP jre"' \
+            'echo "JAVA_HOME=$JAVA_HOME"; echo "--- system java ---"; java -version 2>&1; echo "--- bundled jre ---"; /opt/snap/jre/bin/java -version 2>&1 || echo "no /opt/snap/jre/bin/java"; echo "--- snap.conf jdkhome ---"; grep jdkhome /opt/snap/etc/snap.conf 2>/dev/null || echo "unset"' \
             2>&1 | tee -a probe-out/STRUCTURE.txt || true
 
           # C2RCC (subset diagnostic graph — fast, same variable structure).
@@ -91,9 +91,16 @@ jobs:
           # Acolite: write the settings to a mounted file. The previous /dev/stdin
           # heredoc never reached the container (docker run had no -i), so Acolite
           # saw no inputfile and exited "Nothing to do".
+          #
+          # `limit` clips processing to a small S,W,N,E box around Hansweert
+          # (~51.436 N, 4.014 E — solidly inside this T31UET scene). Without it
+          # Acolite ran the full 10980x10980 scene (a 9 GB L1R) and never reached
+          # L2W, so the last probe returned only TOA rhot_*; we need the L2W
+          # rhow_* bands. A small box reaches L2W fast, same output structure.
           cat > probe-out/acolite_settings.txt <<EOF
           inputfile=/app/$safe
           output=/app/probe-out/acolite
+          limit=51.42,3.98,51.45,4.05
           l2w_parameters=rhow_*
           s2_target_res=10
           EOF

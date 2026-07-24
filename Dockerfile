@@ -70,6 +70,15 @@ COPY . /app
 # full-scene runs on a larger host can raise this at run time via `gpt -c`.
 RUN sed -i 's/^-Xmx.*/-Xmx4G/' /opt/snap/bin/gpt.vmoptions || true
 
+# Pin SNAP to its BUNDLED JRE (Java 11). The probe showed gpt was picking up the
+# system OpenJDK 21 (JAVA_HOME empty), and SNAP 11 on Java 21 is a known JVM
+# crash — the likely cause of the C2RCC segfault. `jdkhome` in snap.conf is the
+# canonical way to fix SNAP's Java. Belt-and-braces: also export JAVA_HOME.
+RUN JRE=$(ls -d /opt/snap/jre 2>/dev/null || ls -d /opt/snap/jdk 2>/dev/null) && \
+    echo "jdkhome=\"$JRE\"" >> /opt/snap/etc/snap.conf && \
+    echo "Pinned SNAP jdkhome=$JRE"
+ENV JAVA_HOME="/opt/snap/jre"
+
 # Credentials are mounted at runtime, never baked in:
 #   docker run -v ~/.aws/credentials:/root/.aws/credentials:ro <image>
 # See scripts/fetch_granules.py and docs.
