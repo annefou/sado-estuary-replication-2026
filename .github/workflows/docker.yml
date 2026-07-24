@@ -20,9 +20,9 @@ env:
   ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
 
 jobs:
-  # Build-only smoke test on PRs: proves the image (SNAP + Acolite + pixi env)
-  # still builds, and that gpt and acolite resolve on PATH inside it. No push,
-  # no registry credentials, no readiness guard.
+  # Build-only smoke test on PRs: proves the pure-Python image (Acolite + pixi
+  # env) still builds and that Acolite resolves on PATH inside it. No push, no
+  # registry credentials, no readiness guard.
   build-test:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -37,13 +37,13 @@ jobs:
           load: true
           tags: replication:pr-${{ github.event.pull_request.number }}
 
-      - name: Smoke-test the atmospheric-correction tools
+      - name: Smoke-test the image
         run: |
           img=replication:pr-${{ github.event.pull_request.number }}
-          echo "== gpt (SNAP / C2RCC) =="
-          docker run --rm "$img" gpt -h >/dev/null && echo "gpt OK"
           echo "== acolite =="
           docker run --rm "$img" sh -c 'command -v acolite' && echo "acolite on PATH"
+          echo "== Acolite imports (osgeo, skimage, pyresample) =="
+          docker run --rm "$img" pixi run python -c "from osgeo import gdal; import skimage, pyresample; print('acolite deps OK')"
           echo "== analysis core imports + tests =="
           docker run --rm "$img" pixi run -e tests python -m pytest tests/test_analysis_core.py tests/test_matchup_stats.py -q
 

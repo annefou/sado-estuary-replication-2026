@@ -1,9 +1,8 @@
 """Pure, testable core of the analysis: window extraction, QC, bio-optical algorithms.
 
 Separated from ``notebooks/03_analysis.py`` so it can be unit-tested without the
-atmospheric-correction processors (SNAP/C2RCC, Acolite, Polymer), which run only
-inside the container. The notebook orchestrates those processors and then calls
-into here.
+atmospheric-correction processors (Acolite, Polymer), which run only inside the
+container. The notebook orchestrates those processors and then calls into here.
 
 Everything in this module operates on the **native Sentinel-2 UTM grid** — no
 HEALPix. Regridding belongs to the derived-product archive (notebook 05), never
