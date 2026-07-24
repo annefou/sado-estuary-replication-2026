@@ -1,2 +1,11 @@
 claude --resume 8569a736-7fca-4c0e-a094-2d0853785e96
 claude --resume 8569a736-7fca-4c0e-a094-2d0853785e96
+
+
+claude --resume 8569a736-7fca-4c0e-a094-2d0853785e96
+backgrounded · 7a9f3d19
+  claude agents             list sessions
+  claude attach 7a9f3d19    open in this terminal
+  claude logs 7a9f3d19      show recent output
+  claude stop 7a9f3d19      stop this session
+

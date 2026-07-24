@@ -65,8 +65,10 @@ RUN pixi install --locked
 
 COPY . /app
 
-# Increase SNAP's tile cache for 10 m full-scene processing.
-RUN sed -i 's/^-Xmx.*/-Xmx6G/' /opt/snap/bin/gpt.vmoptions || true
+# Cap the JVM heap. 6G on a 7G CI runner left no room for SNAP's native
+# allocations and the tile cache, which segfaulted C2RCC; 4G is safer. Real
+# full-scene runs on a larger host can raise this at run time via `gpt -c`.
+RUN sed -i 's/^-Xmx.*/-Xmx4G/' /opt/snap/bin/gpt.vmoptions || true
 
 # Credentials are mounted at runtime, never baked in:
 #   docker run -v ~/.aws/credentials:/root/.aws/credentials:ro <image>

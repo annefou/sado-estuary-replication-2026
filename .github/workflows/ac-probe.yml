@@ -69,25 +69,41 @@ jobs:
       - name: Correct one scene and dump its structure
         run: |
           set -x
+          WS="${{ github.workspace }}"
           safe=$(find data/raw/s2 -maxdepth 8 -name "${{ steps.pick.outputs.name }}" -type d | head -1)
           mkdir -p probe-out
 
+          # Diagnostics: which Java does gpt use? SNAP 11 wants Java 11; a newer
+          # system JDK is a prime suspect for the C2RCC JVM segfault.
+          echo "=== gpt / Java environment ===" | tee probe-out/STRUCTURE.txt
+          docker run --rm replication:probe sh -c \
+            'echo "JAVA_HOME=$JAVA_HOME"; java -version 2>&1; ls -d /opt/snap/jre* 2>/dev/null || echo "no bundled SNAP jre"' \
+            2>&1 | tee -a probe-out/STRUCTURE.txt || true
+
           # C2RCC (subset diagnostic graph — fast, same variable structure).
-          docker run --rm -v "${{ github.workspace }}:/app" replication:probe \
-            gpt scripts/c2rcc_graph_diag.xml \
+          # -c 1G caps SNAP's tile cache; -q 2 limits parallelism — both reduce the
+          # native memory pressure implicated in the segfault.
+          docker run --rm -v "$WS:/app" replication:probe \
+            gpt scripts/c2rcc_graph_diag.xml -c 1G -q 2 \
               -Pinput="$safe" -Poutput=probe-out/c2rcc.nc \
               -Psalinity=20 -Ptemperature=12 || echo "::warning::C2RCC run failed — capturing logs anyway"
 
-          # Acolite over the same scene.
-          docker run --rm -v "${{ github.workspace }}:/app" replication:probe \
-            acolite --cli --nogfx --settings /dev/stdin <<EOF || echo "::warning::Acolite run failed"
-          inputfile=$safe
+          # Acolite: write the settings to a mounted file. The previous /dev/stdin
+          # heredoc never reached the container (docker run had no -i), so Acolite
+          # saw no inputfile and exited "Nothing to do".
+          cat > probe-out/acolite_settings.txt <<EOF
+          inputfile=/app/$safe
           output=/app/probe-out/acolite
           l2w_parameters=rhow_*
           s2_target_res=10
           EOF
+          docker run --rm -v "$WS:/app" replication:probe \
+            acolite --cli --nogfx --settings /app/probe-out/acolite_settings.txt \
+            || echo "::warning::Acolite run failed"
 
-          echo "=== C2RCC output structure ===" | tee probe-out/STRUCTURE.txt
+          echo "=== probe-out contents ===" | tee -a probe-out/STRUCTURE.txt
+          ls -la probe-out | tee -a probe-out/STRUCTURE.txt
+          echo "=== C2RCC output structure ===" | tee -a probe-out/STRUCTURE.txt
           docker run --rm -v "${{ github.workspace }}:/app" replication:probe \
             sh -c 'command -v ncdump >/dev/null && ncdump -h /app/probe-out/c2rcc.nc || pixi run python -c "import xarray as xr; print(xr.open_dataset(\"/app/probe-out/c2rcc.nc\"))"' \
             2>&1 | tee -a probe-out/STRUCTURE.txt || true
