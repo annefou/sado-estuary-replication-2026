@@ -66,8 +66,13 @@ notebooks/figures/
 # Reference / external archives
 reference/
 
-# Results — large numerical outputs (commit only summary CSVs you reference in figures)
+# Results — large / regenerated numerical outputs. The satellite retrievals and
+# per-run logs are produced by `03` (in the container, from the granules); they
+# must never be committed from a dev machine — especially not synthetic test data.
+# Commit only small, final summary CSVs you deliberately reference in figures.
 results/raw/
+results/logs/
+results/chla_satellite_*.parquet
 
 # Docker
 docker-image.tar.gz
