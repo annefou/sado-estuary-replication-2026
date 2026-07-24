@@ -37,8 +37,21 @@ boto3 = "*"                 # Copernicus S3 (eodata) granule download — script
 netcdf4 = "*"               # NetCDF I/O — preferred over .npz for arrays (see DOMAIN.md)
 rasterio = "*"              # Sentinel-2 granule raster I/O
 libgdal-jp2openjpeg = "*"   # JP2 driver — WITHOUT this rasterio cannot open S2 .jp2 bands
+# --- Acolite runtime (its own environment.yml, github.com/acolite/acolite) ---
+# Acolite is an external program we call, not a library, but it runs on THIS pixi
+# env via the container shim, so its deps must be here. Verified against the probe:
+# missing osgeo -> "No module named 'osgeo'"; missing skimage -> L2W never runs,
+# only L1R (TOA) is produced. Added the full declared set to stop dep-by-dep churn.
 gdal = "*"                  # osgeo python bindings — Acolite imports osgeo.gdal directly
-                            # (verified: without it Acolite fails "No module named 'osgeo'")
+libgdal-netcdf = "*"        # gdal NetCDF driver (Acolite writes via gdal)
+scikit-image = "*"          # Acolite L2 processing — without it, no L2W / rhow_*
+pyresample = "*"            # Acolite reprojection/resampling
+pyhdf = "*"                 # Acolite HDF ancillary readers
+h5py = "*"                  # Acolite HDF5 I/O
+pygrib = "*"                # Acolite GRIB ancillary (ERA5 etc.)
+cartopy = "*"               # Acolite mapping utilities
+fsspec = "*"                # Acolite remote/cloud file access
+aiohttp = "*"               # Acolite async ancillary download
 geopandas = "*"             # station geometry, estuary masks
 pyproj = "*"                # CRS transforms (WGS84 <-> UTM31N for Westerschelde)
 dask = "*"                  # out-of-core scene processing
