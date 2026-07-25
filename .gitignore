@@ -74,6 +74,13 @@ results/raw/
 results/logs/
 results/partial/
 results/*_satellite_*.parquet
+# ...except the three small, final match-up result tables the Jupyter Book's
+# 04_figures reads. CI cannot regenerate them (no Acolite / no CDSE credentials),
+# and 03 skips its write when Acolite is absent, so these committed copies are not
+# clobbered. Real run outputs only — never synthetic test data.
+!results/chla_satellite_acolite.parquet
+!results/turbidity_satellite_acolite.parquet
+!results/spm_satellite_acolite.parquet
 
 # Docker
 docker-image.tar.gz
