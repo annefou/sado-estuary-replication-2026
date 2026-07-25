@@ -1,0 +1,60 @@
+{
+  "_note": "AI-generated plain-language retellings, grounded strictly in the signed record (the synthesis label, narrative, verdicts and recommendations). No facts added beyond the record. In the template port this file is produced once at build time by an opt-in AI step; the deterministic 'Record' tab never depends on it.",
+  "_glance_note": "The 'glance' infographic supplies only lay LABELS (in limb order); the verdict colour and the reliable/unreliable icon are taken from the signed record by the generator, so the graphic is accurate by construction.",
+  "glance": {
+    "title": "What satellites can see here",
+    "note": "Same satellite, same water — but only one of these can be trusted.",
+    "items": [
+      {"label": "Muddiness", "sub": "turbidity", "says": "reliable"},
+      {"label": "Algae", "sub": "chlorophyll-a", "says": "unreliable"}
+    ]
+  },
+  "audiences": [
+    {
+      "id": "citizens",
+      "label": "For citizens",
+      "icon": "users",
+      "level": "General public — no science background needed",
+      "title": "Can free satellite data tell us how clean an estuary is?",
+      "lead": "Researchers re-checked whether Europe's free Sentinel-2 satellites can measure water quality in a muddy estuary — using only open-source, freely available software instead of expensive commercial tools.",
+      "sections": [
+        {
+          "h": "What they measured",
+          "p": "Two different things about the water, both from space: how muddy it is (called turbidity) and how much algae is in it (measured as chlorophyll-a). They compared the satellite's answers against real measurements taken in the water itself."
+        },
+        {
+          "h": "What they found",
+          "p": "The results split cleanly. For muddiness, the free open-source method worked very well — as good as, and slightly better than, the paid commercial software the original study used. For algae, the same method did not work: in this murky estuary water it could not reliably tell how much chlorophyll-a was present."
+        },
+        {
+          "h": "Why it matters",
+          "p": "It means a fully free and open toolchain is a credible, citable option for monitoring estuary muddiness — useful for the water authorities who report on rivers and coasts. But satellite algae readings in murky water should be treated as provisional. The wider lesson: 'satellite water quality' is not one reliable number. It depends on exactly what you are measuring, so each measurement has to be trusted, or doubted, on its own."
+        }
+      ],
+      "closing": "Same satellite, same water, two honest answers: trust the muddiness, be careful with the algae."
+    },
+    {
+      "id": "schools",
+      "label": "For schools",
+      "icon": "graduation-cap",
+      "level": "Secondary school · ages ~13–16",
+      "title": "One satellite, two measurements, two very different results",
+      "lead": "How do scientists know a tool really works? They test it again, carefully — in a new place, with different equipment. That re-testing is called replication, and it is how science checks itself.",
+      "sections": [
+        {
+          "h": "The question",
+          "p": "A satellite called Sentinel-2 takes pictures of Earth from space. Can it measure the quality of water in an estuary (where a river meets the sea) — using only free software that anyone can download?"
+        },
+        {
+          "h": "The test",
+          "p": "The team measured two things from space and checked them against real measurements made in the water: how cloudy or muddy the water was, and how much tiny green algae it contained. If the satellite's numbers matched the real ones, the method works."
+        },
+        {
+          "h": "The result",
+          "p": "For muddiness, the satellite got it right. For algae, it got it wrong — in this murky water it simply could not measure the algae reliably. Same satellite, same water, but one answer you can trust and one you cannot."
+        }
+      ],
+      "closing": "The big lesson: a tool can be excellent at one job and unreliable at another. Never assume — test each use on its own. That is exactly what replication is for."
+    }
+  ]
+}
