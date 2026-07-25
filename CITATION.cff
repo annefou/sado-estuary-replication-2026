@@ -10,7 +10,7 @@ authors:
 repository-code: "https://github.com/annefou/sado-estuary-replication-2026"
 license: MIT
 version: "0.1.0"
-date-released: "2026-07-22"
+date-released: "2026-07-25"
 # Identifiers below are recorded AUTOMATICALLY on each release by
 # .github/workflows/release-identifiers.yml — don't fill them in by hand.
 #
