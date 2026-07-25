@@ -20,6 +20,7 @@ from analysis_core import (  # noqa: E402
     coord_index,
     extract_window,
     nearest_band,
+    window_product_value,
     window_reflectance,
 )
 
@@ -92,6 +93,42 @@ def test_window_reflectance_all_invalid_is_nan():
     extract = extract_window(bands, valid, row=5, col=5)
     assert extract.n_valid == 0
     assert np.isnan(window_reflectance(extract, "B04"))
+
+
+# --- Native product (Nechad turbidity/SPM) extraction ------------------------
+
+def test_window_product_value_skips_nonfinite_pixels():
+    # Acolite's Nechad product is NaN where 1 - rhow/C degenerates; those cells
+    # must be skipped, not allowed to poison the window mean.
+    prod = np.array([[2.0, 4.0, np.nan], [6.0, 8.0, 10.0], [12.0, np.nan, 14.0]], dtype="float32")
+    valid = np.ones((3, 3), dtype=bool)
+    extract = extract_window({"TUR": np.pad(prod, 1)}, np.pad(valid, 1), row=2, col=2)
+    # Mean of the seven finite pixels: (2+4+6+8+10+12+14)/7 = 8.0
+    assert window_product_value(extract, "TUR") == pytest.approx(8.0)
+
+
+def test_window_product_value_all_nan_is_nan():
+    prod = np.full((3, 3), np.nan, dtype="float32")
+    valid = np.ones((3, 3), dtype=bool)
+    extract = extract_window({"TUR": np.pad(prod, 1)}, np.pad(valid, 1), row=2, col=2)
+    assert np.isnan(window_product_value(extract, "TUR"))
+
+
+def test_window_product_value_respects_valid_mask():
+    # A finite pixel that is masked-invalid must not contribute.
+    prod = np.array([[10.0, 10.0, 10.0], [10.0, 999.0, 10.0], [10.0, 10.0, 10.0]], dtype="float32")
+    valid = np.array([[1, 1, 1], [1, 0, 1], [1, 1, 1]], dtype=bool)  # centre invalid
+    extract = extract_window({"TUR": np.pad(prod, 1)}, np.pad(valid, 1), row=2, col=2)
+    assert extract.n_valid == 8
+    assert window_product_value(extract, "TUR") == pytest.approx(10.0)
+
+
+def test_nearest_band_selects_native_product_band():
+    # S2C emits TUR at 785 nm; the paper's selected turbidity band is 783 nm.
+    tur = {667: None, 707: None, 741: None, 785: None, 835: None, 866: None}
+    assert nearest_band(tur, 783) == 785  # turbidity limb
+    spm = {667: None, 707: None, 741: None, 785: None, 835: None, 866: None}
+    assert nearest_band(spm, 740) == 741  # SPM limb
 
 
 def test_chla_gons_matches_hand_computation():

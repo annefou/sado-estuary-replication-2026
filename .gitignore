@@ -73,7 +73,7 @@ reference/
 results/raw/
 results/logs/
 results/partial/
-results/chla_satellite_*.parquet
+results/*_satellite_*.parquet
 
 # Docker
 docker-image.tar.gz

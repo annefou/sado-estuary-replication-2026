@@ -68,6 +68,7 @@ from analysis_core import (
     extract_window,
     nearest_band,
     open_acolite_l2w,
+    window_product_value,
     window_reflectance,
 )
 from matchup_stats import stratified_statistics
@@ -125,11 +126,15 @@ def run_acolite(safe_dir: Path, out_dir: Path) -> Path:
     """Atmospherically correct one scene with Acolite. Returns the output dir."""
     out_dir.mkdir(parents=True, exist_ok=True)
     settings = out_dir / "acolite_settings.txt"
+    # rhow_* feeds the Gons Chl-a chain (aGS); the Nechad wildcards make Acolite
+    # emit its native turbidity (TUR_Nechad2009_<nm>) and SPM (SPM_Nechad2010_<nm>)
+    # products per band — the paper's Nechad chains, computed with Acolite's
+    # RSR-convolved published coefficients (the open-source `aN` analogue of `cN`).
     settings.write_text(
         f"inputfile={safe_dir}\n"
         f"output={out_dir}\n"
         f"limit={ESTUARY_LIMIT}\n"
-        "l2w_parameters=rhow_*\n"
+        "l2w_parameters=rhow_*,tur_nechad2009_*,spm_nechad2010_*\n"
         "s2_target_res=10\n"
     )
     # --nogfx skips the matplotlib import entirely (verified against
@@ -144,16 +149,30 @@ def run_acolite(safe_dir: Path, out_dir: Path) -> Path:
 
 
 # %% [markdown]
-# ## 2 + 3. Extract windows and retrieve Chl-a
+# ## 2 + 3. Extract windows and retrieve the three parameters
 #
 # `open_acolite_l2w` (in `analysis_core`, structure verified by the AC probe)
-# returns a `CorrectedScene`: `rhow` bands keyed by wavelength, a validity mask
-# from `l2_flags`, and the UTM `x`/`y` coordinates. The Gons chain needs 665, 705
-# and 783 nm; Acolite labels the red-edge band 704, so bands are matched by
-# **nearest wavelength** rather than exact name (also robust across S2A/B/C).
+# returns a `CorrectedScene`: `rhow` bands keyed by wavelength, the native Nechad
+# `products` (turbidity/SPM), a validity mask from `l2_flags`, and the UTM `x`/`y`
+# coordinates. The Gons chain needs 665, 705 and 783 nm; Acolite labels the
+# red-edge band 704 (and drifts a few nm across S2A/B/C), so bands are matched by
+# **nearest wavelength** rather than exact name — for `rhow` and for the products.
+#
+# Three parameters are retrieved, one per limb of the paper's asymmetry claim:
+#
+# | Parameter | Chain | Band | Paper's selected chain |
+# |---|---|---|---|
+# | Chlorophyll-a | Acolite + Gons 2005 (`aGS`) | 665/705/783 | `cGS` (C2RCC), R²=0.63 |
+# | Turbidity | Acolite + Nechad 2009 (`aN783`) | 783 nm | `cN783`, R²=0.84 |
+# | SPM | Acolite + Nechad 2010 (`aN740`) | 740 nm | `cN740`, R²=0.49 |
 
 # %%
 GONS_TARGETS_NM = (665, 705, 783)
+
+# The paper's selected Nechad bands: turbidity at 783 nm (cN783), SPM at 740 nm
+# (cN740). Nearest-wavelength matching absorbs the S2A/B/C band-centre drift.
+TURBIDITY_TARGET_NM = 783
+SPM_TARGET_NM = 740
 
 
 def chla_for_scene(scene, stations: pd.DataFrame) -> pd.DataFrame:
@@ -189,6 +208,45 @@ def chla_for_scene(scene, stations: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def product_for_scene(
+    scene, stations: pd.DataFrame, product_name: str, target_nm: int
+) -> pd.DataFrame:
+    """Per-station value of one native Acolite product (turbidity/SPM) from a scene.
+
+    Mirrors `chla_for_scene` but reads a pre-computed Nechad product band instead
+    of running a bio-optical algorithm: select the band nearest `target_nm`, cut
+    the 3x3 window at each station, and average the valid, finite pixels.
+    """
+    if product_name not in scene.products or not scene.products[product_name]:
+        return pd.DataFrame()  # scene corrected without this product
+    key = nearest_band(scene.products[product_name], target_nm)
+    band_arrays = {product_name: scene.products[product_name][key]}
+    to_utm = Transformer.from_crs("EPSG:4326", f"EPSG:{scene.epsg}", always_xy=True)
+
+    rows = []
+    for station in stations.itertuples():
+        easting, northing = to_utm.transform(station.lon, station.lat)
+        row, col = coord_index(scene.x, scene.y, easting, northing)
+        try:
+            extract = extract_window(band_arrays, scene.valid, row, col)
+        except ValueError:
+            continue  # window runs off the scene edge -> not a match-up
+        value = window_product_value(extract, product_name)
+        if not np.isfinite(value):
+            continue
+        rows.append(
+            {
+                "station": station.station,
+                "time": station.time,
+                "value_satellite": float(value),
+                "n_valid_pixels": extract.n_valid,
+                "band_nm": int(key),
+                "processor": scene.processor,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 # %% [markdown]
 # ## 4. Agreement statistics
 #
@@ -212,22 +270,42 @@ def score(matched: pd.DataFrame) -> dict:
 
 
 # %% [markdown]
-# ## Driver — resumable, per-scene checkpointed
+# ## Driver — resumable, per-(scene, parameter) checkpointed
 #
-# For each match-up scene: correct with Acolite, read the L2W into a
-# `CorrectedScene`, retrieve Chl-a at each station whose in situ sample pairs with
-# it, **write that scene's retrievals to `results/partial/<id>.parquet`**, then
-# delete the corrected product (windows-only storage).
+# One Acolite correction per scene feeds all three parameters (the correction is
+# the expensive step; extracting three products from it is nearly free). For each
+# match-up scene we correct once, then retrieve every parameter that has an in situ
+# sample pairing with that scene, writing **one checkpoint per parameter** to
+# `results/partial/<parameter>/<id>.parquet`.
 #
-# The per-scene checkpoint makes the run **resumable**: a scene whose partial file
-# already exists is skipped, so an interrupted run (VM timeout, kill) loses at most
-# the one scene in flight and re-running continues where it stopped. The final
-# `chla_satellite_acolite.parquet` is the concatenation of all partials.
-# Gated on Acolite being present, so the notebook is import-safe without it.
+# Checkpointing per (scene, parameter) makes the run **resumable at that grain**: a
+# scene is corrected only if *some* parameter still needs it, and each parameter is
+# extracted only if its own checkpoint is missing. So the Chl-a checkpoints from the
+# earlier run are reused as-is (not recomputed), and an interrupted run loses at most
+# the scene in flight. Each parameter's final parquet is the concatenation of its
+# checkpoints. Gated on Acolite being present, so the notebook is import-safe.
 
 # %%
 PARTIAL_DIR = RESULTS_DIR / "partial"
 PARTIAL_DIR.mkdir(parents=True, exist_ok=True)
+
+# The three limbs of the paper's asymmetry claim. `extract` is called with
+# (CorrectedScene, stations) and returns a per-station retrieval frame; `output`
+# is the final concatenated parquet each figure/stats step reads.
+QUANTITY_SPECS = {
+    "chlorophyll_a": {
+        "extract": lambda scene, st: chla_for_scene(scene, st),
+        "output": "chla_satellite_acolite.parquet",
+    },
+    "turbidity": {
+        "extract": lambda scene, st: product_for_scene(scene, st, "TUR_Nechad2009", TURBIDITY_TARGET_NM),
+        "output": "turbidity_satellite_acolite.parquet",
+    },
+    "spm": {
+        "extract": lambda scene, st: product_for_scene(scene, st, "SPM_Nechad2010", SPM_TARGET_NM),
+        "output": "spm_satellite_acolite.parquet",
+    },
+}
 
 
 def l2w_path(out_dir: Path) -> Path:
@@ -238,16 +316,44 @@ def l2w_path(out_dir: Path) -> Path:
     return hits[0]
 
 
+def _migrate_flat_chla_partials(partial_dir: Path) -> None:
+    """Move the earlier run's flat `partial/<id>.parquet` Chl-a checkpoints into
+    the per-parameter `partial/chlorophyll_a/` layout, so they are reused, not
+    recomputed. One-shot and idempotent."""
+    chla_dir = partial_dir / "chlorophyll_a"
+    chla_dir.mkdir(parents=True, exist_ok=True)
+    for p in partial_dir.glob("*.parquet"):  # flat files = old Chl-a checkpoints
+        target = chla_dir / p.name
+        if not target.exists():
+            p.rename(target)
+        else:
+            p.unlink()
+
+
 # %%
 if HAVE_ACOLITE:
+    _migrate_flat_chla_partials(PARTIAL_DIR)
     matchups = pd.read_parquet(INTERIM_DIR / "matchups_westerschelde.parquet")
-    chl = matchups[matchups["quantity"] == "chlorophyll_a"].copy()
-    scenes = chl.drop_duplicates("id")
-    done = {p.stem for p in PARTIAL_DIR.glob("*.parquet")}
-    print(f"{len(scenes)} Chl-a scenes; {len(done)} already checkpointed, {len(scenes) - len(done)} to do")
+
+    # Per-parameter match-up rows and checkpoint dirs; scenes = union across params.
+    rows_by_q = {q: matchups[matchups["quantity"] == q].copy() for q in QUANTITY_SPECS}
+    scene_ids_by_q = {q: set(rows_by_q[q]["id"]) for q in QUANTITY_SPECS}
+    pdir_by_q = {q: PARTIAL_DIR / q for q in QUANTITY_SPECS}
+    for d in pdir_by_q.values():
+        d.mkdir(parents=True, exist_ok=True)
+
+    scenes = matchups[matchups["quantity"].isin(QUANTITY_SPECS)].drop_duplicates("id")
+    done = {q: sum(1 for _ in pdir_by_q[q].glob("*.parquet")) for q in QUANTITY_SPECS}
+    print(f"{len(scenes)} scenes across {list(QUANTITY_SPECS)}; checkpointed so far: {done}")
 
     for n, scene in enumerate(scenes.itertuples(), start=1):
-        if scene.id in done:
+        # Which parameters does this scene serve, and still lack a checkpoint for?
+        todo = [
+            q for q in QUANTITY_SPECS
+            if scene.id in scene_ids_by_q[q]
+            and not (pdir_by_q[q] / f"{scene.id}.parquet").exists()
+        ]
+        if not todo:
             continue
         safe = next(GRANULE_DIR.rglob(f"{scene.name}"), None)
         if safe is None:
@@ -257,25 +363,28 @@ if HAVE_ACOLITE:
         try:
             run_acolite(safe, out_dir)
             corrected = open_acolite_l2w(l2w_path(out_dir), processor="Acolite 20260421.0")
-            scene_stations = chl[chl["id"] == scene.id][["station", "lon", "lat", "time"]]
-            result = chla_for_scene(corrected, scene_stations)
-            # Atomic checkpoint: write to a temp then rename, so a kill mid-write
-            # cannot leave a truncated partial that resume would trust.
-            tmp = PARTIAL_DIR / f".{scene.id}.tmp.parquet"
-            result.to_parquet(tmp, index=False)
-            tmp.rename(PARTIAL_DIR / f"{scene.id}.parquet")
-            print(f"  [{n}/{len(scenes)}] {scene.name}: {len(result)} retrieval(s)", flush=True)
+            counts = {}
+            for q in todo:
+                stations = rows_by_q[q][rows_by_q[q]["id"] == scene.id][["station", "lon", "lat", "time"]]
+                result = QUANTITY_SPECS[q]["extract"](corrected, stations)
+                # Atomic checkpoint: temp then rename, so a kill mid-write cannot
+                # leave a truncated partial that resume would trust.
+                tmp = pdir_by_q[q] / f".{scene.id}.tmp.parquet"
+                result.to_parquet(tmp, index=False)
+                tmp.rename(pdir_by_q[q] / f"{scene.id}.parquet")
+                counts[q] = len(result)
+            print(f"  [{n}/{len(scenes)}] {scene.name}: {counts}", flush=True)
         except Exception as exc:  # one bad scene must not abort the whole run
             print(f"  [{n}/{len(scenes)}] FAILED {scene.name}: {type(exc).__name__}: {exc}", flush=True)
         finally:
             if scene.name not in KEEP_FULL_SCENES:
                 shutil.rmtree(out_dir, ignore_errors=True)  # windows kept, scene not
 
-    # Concatenate all checkpoints into the final result.
-    partials = [pd.read_parquet(p) for p in sorted(PARTIAL_DIR.glob("*.parquet"))]
-    satellite = pd.concat(partials, ignore_index=True) if partials else pd.DataFrame()
-    satellite.to_parquet(RESULTS_DIR / "chla_satellite_acolite.parquet", index=False)
-    print(f"\n{len(satellite)} satellite Chl-a retrievals from {len(partials)} scenes "
-          f"-> results/chla_satellite_acolite.parquet")
+    # Concatenate each parameter's checkpoints into its final result.
+    for q, spec in QUANTITY_SPECS.items():
+        parts = [pd.read_parquet(p) for p in sorted(pdir_by_q[q].glob("*.parquet"))]
+        combined = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()
+        combined.to_parquet(RESULTS_DIR / spec["output"], index=False)
+        print(f"{len(combined):4d} {q} retrievals from {len(parts)} scenes -> results/{spec['output']}")
 else:
     print("\nSkipped §1–§4: Acolite absent. Run inside the container.")

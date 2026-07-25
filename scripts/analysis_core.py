@@ -12,7 +12,7 @@ quantity being validated. See DOMAIN.md and notebook 05.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -87,6 +87,24 @@ def window_reflectance(extract: WindowExtract, band: str) -> float:
     return float(np.mean(extract.values[band][extract.valid]))
 
 
+def window_product_value(extract: WindowExtract, band: str) -> float:
+    """Mean of the valid **and finite** product pixels in the window; NaN if none.
+
+    Unlike ``window_reflectance``, this skips non-finite pixels rather than letting
+    one NaN poison the whole window mean. Acolite's Nechad turbidity/SPM products
+    are NaN where the ``1 - rhow/C`` denominator degenerates (very bright/turbid
+    pixels), so a station window can be geometrically valid yet contain NaN cells;
+    those are excluded here exactly as a masked pixel would be.
+    """
+    if extract.n_valid == 0:
+        return float("nan")
+    values = extract.values[band][extract.valid]
+    finite = np.isfinite(values)
+    if not finite.any():
+        return float("nan")
+    return float(np.mean(values[finite]))
+
+
 # --------------------------------------------------------------------------- #
 # Corrected-scene adapter — normalises each processor's output into one shape.
 #
@@ -108,6 +126,13 @@ class CorrectedScene:
     `rhow` maps band-centre wavelength (nm) -> full 2-D reflectance array on the
     scene's UTM grid. `valid` is the full-scene usability mask. `x`/`y` are the
     1-D UTM easting/northing coordinates; `epsg` their CRS.
+
+    `products` holds Acolite's native derived water-quality products, keyed by
+    product family (e.g. ``"TUR_Nechad2009"``, ``"SPM_Nechad2010"``) then by the
+    band-centre wavelength Acolite emitted (nm). These are the paper's Nechad
+    turbidity / SPM algorithms, computed by Acolite with RSR-convolved published
+    coefficients — the open-source ``aN`` analogue of the paper's ``cN`` chain.
+    Empty for scenes corrected with ``rhow``-only settings (e.g. the Chl-a run).
     """
 
     rhow: dict[int, np.ndarray]
@@ -116,6 +141,7 @@ class CorrectedScene:
     y: np.ndarray
     epsg: int
     processor: str
+    products: dict[str, dict[int, np.ndarray]] = field(default_factory=dict)
 
 
 def nearest_band(rhow: dict[int, np.ndarray], target_nm: int, *, tol_nm: int = 15) -> int:
@@ -161,6 +187,16 @@ def open_acolite_l2w(path, *, processor: str = "Acolite") -> CorrectedScene:
     if not rhow:
         raise ValueError(f"{path} has no rhow_* bands — not an Acolite L2W product?")
 
+    # Acolite's native derived products (paper's Nechad turbidity/SPM chains),
+    # named e.g. TUR_Nechad2009_783 / SPM_Nechad2010_740. Band centres drift a few
+    # nm between S2A/B/C (e.g. 783 vs 785), so these are keyed by the emitted
+    # wavelength and selected downstream with nearest_band, exactly like rhow.
+    products: dict[str, dict[int, np.ndarray]] = {}
+    for name in dataset.data_vars:
+        match = re.match(r"(TUR_Nechad2009|SPM_Nechad2010)_(\d+)$", name)
+        if match:
+            products.setdefault(match.group(1), {})[int(match.group(2))] = dataset[name].values
+
     flags = dataset["l2_flags"].values if "l2_flags" in dataset else np.zeros_like(
         next(iter(rhow.values())), dtype="int32"
     )
@@ -175,6 +211,7 @@ def open_acolite_l2w(path, *, processor: str = "Acolite") -> CorrectedScene:
         y=dataset["y"].values,
         epsg=epsg,
         processor=processor,
+        products=products,
     )
 
 
