@@ -60,6 +60,71 @@ ORIGINAL_WINDOW = ("2018-03-01", "2020-04-01")
 PAPER_CGS_R2 = 0.63
 
 # %% [markdown]
+# ## Study area — the Westerschelde estuary and its monitoring stations
+#
+# Where the validation happens: the six Rijkswaterstaat axis stations along the
+# Westerschelde, coloured by their mean Sentinel-2 (Acolite + Nechad, aN783)
+# turbidity — the along-estuary gradient the strong-turbidity result rests on.
+# This is the replication's analogue of the original study's **Figure 1** (study
+# area + sampling stations).
+
+
+# %%
+def make_study_area_map():
+    """Cartopy map of the Westerschelde + the six axis stations, coloured by mean
+    satellite (aN783) turbidity. Degrades to a plain lon/lat plot if Natural Earth
+    coastlines can't be fetched (offline CI)."""
+    in_situ = pd.read_parquet(RAW_DIR / "rws_in_situ_westerschelde.parquet")
+    sta = in_situ[["station", "station_name", "lat", "lon"]].drop_duplicates("station").copy()
+    tur_path = RESULTS_DIR / "turbidity_satellite_acolite.parquet"
+    if tur_path.exists():
+        mean_turb = pd.read_parquet(tur_path).groupby("station")["value_satellite"].mean()
+        sta["turb"] = sta["station"].map(mean_turb)
+    else:
+        sta["turb"] = np.nan
+
+    extent = [3.48, 4.32, 51.31, 51.57]  # lon0, lon1, lat0, lat1
+    try:
+        import cartopy.crs as ccrs
+        import cartopy.feature as cfeature
+        proj = ccrs.PlateCarree()
+        fig, ax = plt.subplots(figsize=(9, 4.8), subplot_kw={"projection": proj})
+        ax.set_extent(extent, crs=proj)
+        ax.add_feature(cfeature.OCEAN.with_scale("10m"), facecolor="#cfe0ea")
+        ax.add_feature(cfeature.LAND.with_scale("10m"), facecolor="#eae6df")
+        ax.coastlines("10m", linewidth=0.6, color="#6b7b86")
+        gl = ax.gridlines(draw_labels=True, linewidth=0.3, color="0.85")
+        gl.top_labels = gl.right_labels = False
+        tkw = {"transform": proj}
+    except Exception as exc:  # offline / Natural Earth unavailable — still show points
+        print(f"cartopy basemap unavailable ({type(exc).__name__}: {exc}); plotting points only")
+        fig, ax = plt.subplots(figsize=(9, 4.8))
+        ax.set_xlim(extent[0], extent[1])
+        ax.set_ylim(extent[2], extent[3])
+        ax.set_xlabel("Longitude (°E)")
+        ax.set_ylabel("Latitude (°N)")
+        tkw = {}
+
+    has = sta["turb"].notna()
+    if (~has).any():
+        ax.scatter(sta.loc[~has, "lon"], sta.loc[~has, "lat"], s=90, c="0.75",
+                   edgecolor="k", linewidth=0.6, zorder=4, **tkw)
+    sc = ax.scatter(sta.loc[has, "lon"], sta.loc[has, "lat"], c=sta.loc[has, "turb"],
+                    s=130, cmap="YlOrBr", vmin=0, edgecolor="k", linewidth=0.6, zorder=5, **tkw)
+    for _, r in sta.iterrows():
+        ax.text(r["lon"] + 0.008, r["lat"] + 0.004, r["station_name"], fontsize=8, zorder=6, **tkw)
+    cb = fig.colorbar(sc, ax=ax, shrink=0.82, pad=0.02)
+    cb.set_label("mean satellite turbidity, aN783 (FNU)")
+    ax.set_title("Study area — Westerschelde estuary and the six Rijkswaterstaat axis stations")
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "study_area.png", dpi=150, bbox_inches="tight")
+    fig.savefig(FIGURES_DIR / "study_area.pdf", bbox_inches="tight")
+    plt.show()  # required for MyST inline display
+
+
+make_study_area_map()
+
+# %% [markdown]
 # ## Build the match-up pairs
 #
 # `03` writes one satellite Chl-a per (station, in situ sample time); joining to
