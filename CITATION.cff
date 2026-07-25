@@ -3,10 +3,10 @@ title: "sado-estuary-replication-2026"
 message: "If you use this software, please cite it as below."
 type: software
 authors:
-  - family-names: "Fouilloux"
-    given-names: "Anne"
-    orcid: "https://orcid.org/0000-0002-1784-2920"
-    affiliation: "LifeWatch ERIC"
+- family-names: "Fouilloux"
+  given-names: "Anne"
+  orcid: "https://orcid.org/0000-0002-1784-2920"
+  affiliation: "LifeWatch ERIC"
 repository-code: "https://github.com/annefou/sado-estuary-replication-2026"
 license: MIT
 version: "0.1.0"
@@ -31,16 +31,27 @@ date-released: "2026-07-25"
 # A leftover DOI placeholder token here would ship a non-resolving DOI as a
 # citable identifier, so it is intentionally absent rather than templated.
 keywords:
-  - replication
-  - reproducibility
-  - FORRT
-  - nanopublication
-  - Science-Live
+- replication
+- reproducibility
+- FORRT
+- nanopublication
+- Science-Live
 references:
-  - type: article
-    title: "Deriving Water Quality Parameters Using Sentinel-2 Imagery: A Case Study in the Sado Estuary, Portugal"
-    authors:
-      - family-names: "Sent"
-        given-names: "Giulia"
-    year: "2021"
-    doi: "10.3390/rs13051043"
+- type: article
+  title: "Deriving Water Quality Parameters Using Sentinel-2 Imagery: A Case Study in the Sado Estuary, Portugal"
+  authors:
+  - family-names: "Sent"
+    given-names: "Giulia"
+  year: "2021"
+  doi: "10.3390/rs13051043"
+doi: 10.5281/zenodo.21561993
+identifiers:
+- type: doi
+  value: 10.5281/zenodo.21561993
+  description: Concept DOI (resolves to the latest version) — cite the project
+- type: doi
+  value: 10.5281/zenodo.21561994
+  description: Version DOI for v0.1.0 — pins this exact release; cite this from nanopubs
+- type: swh
+  value: swh:1:rev:b7e771b47ee3c39f3b338a625d2015f20ff76a32;origin=https://github.com/annefou/sado-estuary-replication-2026
+  description: Software Heritage ID of the v0.1.0 source tree
