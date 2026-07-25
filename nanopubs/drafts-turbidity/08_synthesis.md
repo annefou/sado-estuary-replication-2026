@@ -162,24 +162,17 @@ What was not tested? What might not generalise?
 Each entry is a URL — typically the FORRT Outcome URIs being synthesised. Pull from `nanopubs/PUBLISHED.md` (and/or registries from sibling repos).
 
 > **Carry-forward — TWO Outcome URIs, one auto-wired, one added by hand.** This synthesis
-> composes both limbs, so the `sources` list needs **both** Outcome URIs (the field is a
-> repeatable list, minItems 1):
+> lives in the **turbidity** chain — the last limb published — so both Outcome URIs are
+> available when it publishes:
 >
-> 1. **Chlorophyll-a Outcome** (`nanopubs/drafts/05_outcome.md`,
->    `chla-weak-limb-open-source-westerschelde`) — **auto-wired.** `build_chain_draft.py`
->    carries this Outcome's published URI into `sources` automatically (the `05_outcome →
->    08_synthesis` edge). Leave it for the wizard; do not paste it by hand.
-> 2. **Turbidity Outcome** (`nanopubs/drafts-turbidity/05_outcome.md`,
->    `turbidity-strong-limb-open-source-westerschelde`) — **ADD MANUALLY.** The producer
->    wires only the ONE Outcome in `nanopubs/drafts/`; the second limb lives in a separate
->    drafts directory and is NOT auto-wired. At publish time, add its published URI as a
->    SECOND `source` row in the wizard.
->
-> Neither URI exists yet (nothing in `nanopubs/PUBLISHED.md` is published); both are filled
-> at publish time.
-
-- _Source URL 1 (chlorophyll-a Outcome, this chain — AUTO-WIRED by build_chain_draft.py): ___
-- _Source URL 2 (turbidity Outcome, `nanopubs/drafts-turbidity/05_outcome.md` — ADD MANUALLY at publish time): ___
+> 1. **Turbidity Outcome** (`nanopubs/drafts-turbidity/05_outcome.md`,
+>    `turbidity-strong-limb-open-source-westerschelde`) — **auto-wired.** `build_chain_draft.py`
+>    carries THIS chain's just-published Outcome URI into `sources` automatically (the
+>    `05_outcome → 08_synthesis` edge). Leave it for the wizard.
+> 2. **Chlorophyll-a Outcome** (`chla-weak-limb-open-source-westerschelde`) — **ADD MANUALLY.**
+>    The Chl-a limb is a separate chain that was published first, so its Outcome URI is already
+>    known. At the synthesis step, paste it as a SECOND `source` row in the wizard (from the URI
+>    the Chl-a wizard returned / `nanopubs/PUBLISHED.md` step 05).
 
 <!-- field: topic -->
 ### Topic (search/select, required)

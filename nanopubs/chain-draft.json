@@ -4,7 +4,7 @@
   "chain_shape": "paper-rooted",
   "source": {
     "repository": "https://github.com/annefou/sado-estuary-replication-2026",
-    "commit": "71476b856c9d448e2a6a8dcb5c7f22249ecc2005",
+    "commit": "8cb92c7d8fd7e4f4bdb9fcee4dd15b316e54d220",
     "figure": "figures/main_result.png"
   },
   "steps": [
@@ -22,7 +22,7 @@
         "quotation": "nanopubs/drafts/01_quote.md",
         "comment": "nanopubs/drafts/01_quote.md"
       },
-      "published_uri": null
+      "published_uri": "https://w3id.org/sciencelive/np/RAXx0A9g5UJ5AM686y-9FOn5bwEdmb45xqhgVoNkCo3Pc"
     },
     {
       "step": "02_aida",
@@ -181,57 +181,6 @@
         "st02": "cites = validation status (see 05_outcome); cited = CITATION.cff references[article]"
       },
       "published_uri": null
-    },
-    {
-      "step": "08_synthesis",
-      "template_key": "RESEARCH_SYNTHESIS",
-      "template_uri": "https://w3id.org/np/RApmrqOEr4f5bJC2vayrTnzhwnuEfAU_I4Pdg8K5JxeBw",
-      "prefill": {
-        "synthesis": "sentinel2-parameter-asymmetry-open-source-westerschelde",
-        "label": "Open-source Sentinel-2 reproduces the parameter-dependent water-quality retrieval asymmetry in the Westerschelde",
-        "conclusion": "Sent et al. (2021) reported that Sentinel-2 MSI retrieves estuarine water-quality\nparameters with parameter-dependent accuracy — strong for turbidity, weak for\nchlorophyll-a. This synthesis composes two independent replication limbs and finds\nthat the asymmetry itself is what replicates. In an independent, more turbid estuary\n(the Westerschelde) and with a fully open-source atmospheric-correction chain\n(Acolite), the two parameters behave exactly as the paper's asymmetry predicts, but\nthey land on opposite verdicts. The turbidity limb CONFIRMS the paper: the open-source\nAcolite + Nechad (aN783) chain retrieves in situ turbidity in strong agreement,\nR² = 0.92 with a near-unity slope (0.86), meeting and slightly exceeding the paper's\nproprietary C2RCC + Nechad (cN783) result of R² = 0.84. The chlorophyll-a limb\nQUALIFIES the paper's own caution: the open-source Acolite + Gons (aGS) chain achieves\nno useful agreement with in situ chlorophyll-a, R² = 0.10 (log10 space), far below the\npaper's selected C2RCC + Gons (cGS) result of R² = 0.63, deepening rather than\nresolving the weakness the original authors flagged. The composed, replicated result\nis therefore not a single accuracy number but a structural property: Sentinel-2\nwater-quality retrieval accuracy is parameter-dependent, and that dependence survives\nboth a change of estuary and the replacement of the proprietary processor by an\nopen-source one.",
-        "recommendation": "1. Do not treat \"Sentinel-2 water-quality retrieval\" as a single capability. Validate\n   and report accuracy per parameter: a chain trustworthy for turbidity can be\n   simultaneously unreliable for chlorophyll-a in the same water.\n\n2. For estuarine turbidity monitoring (e.g. Water Framework Directive reporting), a\n   fully open-source Acolite + Nechad chain is a viable, citable alternative to the\n   proprietary C2RCC processor — here it matched and slightly exceeded the proprietary\n   result in a different estuary.\n\n3. For estuarine chlorophyll-a, treat MSI retrievals in turbid Case-2 water as\n   provisional. The paper's call for \"a more complete set of match-ups\" stands; collect\n   more coincident in situ pairs and validate locally before any operational use, and do\n   not assume a red-edge algorithm is tracking pigment rather than backscatter.\n\n4. Prefer open-source, operationally reproducible processing chains for replication and\n   monitoring: they make the retrieval auditable end-to-end and, on the turbidity limb\n   here, cost nothing in accuracy.",
-        "conditions": "This synthesis holds within the following scope:\n\n- Domain and site: a turbid, mesotidal, well-mixed temperate estuary — the Westerschelde\n  (Netherlands). It generalises to comparable optically complex Case-2 estuaries, not to\n  clear open-ocean (Case-1) water.\n- Processing chain: the fully open-source Acolite atmospheric correction with the Gons\n  et al. (2005) red-edge algorithm for chlorophyll-a (aGS) and the Nechad et al. (2010)\n  algorithm for turbidity (aN783). This is NOT the paper's proprietary C2RCC chain\n  (cGS / cN783); the synthesis compares an open-source chain against the paper's\n  proprietary result and does not re-run C2RCC.\n- Sensor and period: Sentinel-2 MSI (A/B/C era), imagery 2016–2026.\n- Reference: coincident Rijkswaterstaat in situ observations at along-axis stations;\n  turbidity compared in linear space (FNU on both sides, no unit conversion),\n  chlorophyll-a compared in log10 space, matching the paper's treatment of each.\n- Sample sizes: small — turbidity N = 11 match-ups, chlorophyll-a N = 33. The direction\n  of each verdict is robust; precise magnitudes carry wide uncertainty.\n- Design: a Replication (different site, different period, open-source processor), not a\n  Reproduction — the Sado in situ data are not public.\n- Out of scope: grid-sensitivity of the retrieval (a HEALPix / DGGS GRID4EARTH\n  representation of the corrected fields) is deferred to a separate follow-up chain that\n  will extend this one; the primary validation stays on the native Sentinel-2 grid.",
-        "limitations": "1. Not a head-to-head processor test. The paper's headline numbers (cGS R² = 0.63,\n   cN783 R² = 0.84) are the proprietary C2RCC chain, which was never run here (C2RCC\n   exists only inside ESA SNAP and crashes in the container). The synthesis compares an\n   open-source chain against the paper's published proprietary result; it does not prove\n   the open-source chain equals C2RCC on the same imagery. In particular, the finding\n   that open-source Acolite matches C2RCC for turbidity is a single-site observation, not\n   a general claim that Acolite outperforms C2RCC everywhere.\n\n2. Small samples. With N = 11 (turbidity) and N = 33 (chlorophyll-a), each R² carries a\n   wide confidence interval. The composed asymmetry is qualitatively robust across the\n   two limbs; the exact R² values should not be over-read.\n\n3. Single estuary, single reference network. Both limbs were validated in one\n   Westerschelde record against one in situ provider. Whether the parameter-dependent\n   asymmetry holds in structurally different estuaries, or against other reference\n   networks, was not tested here.\n\n4. Retrieval bias not corrected. The turbidity retrieval carries a slight positive bias\n   (+6.91 FNU) and the chlorophyll-a retrieval a positive bias with a negative slope;\n   these are reported, not corrected, and would matter for any quantitative use.\n\n5. Grid representation untested. Any sensitivity of these verdicts to spatial\n   re-gridding (HEALPix / DGGS) is explicitly out of scope and deferred to a follow-up\n   chain.",
-        "date": "2026-07-25",
-        "topicSelection": [
-          {
-            "uri": "http://www.wikidata.org/entity/Q898574",
-            "label": "turbidity"
-          },
-          {
-            "uri": "http://www.wikidata.org/entity/Q133878",
-            "label": "chlorophyll a"
-          },
-          {
-            "uri": "http://www.wikidata.org/entity/Q199687",
-            "label": "remote sensing"
-          },
-          {
-            "uri": "http://www.wikidata.org/entity/Q47053",
-            "label": "estuary"
-          },
-          {
-            "uri": "http://www.wikidata.org/entity/Q4302480",
-            "label": "Sentinel-2"
-          },
-          {
-            "uri": "http://www.wikidata.org/entity/Q625376",
-            "label": "water quality"
-          }
-        ]
-      },
-      "provenance": {
-        "synthesis": "nanopubs/drafts/08_synthesis.md",
-        "label": "nanopubs/drafts/08_synthesis.md",
-        "conclusion": "nanopubs/drafts/08_synthesis.md",
-        "recommendation": "nanopubs/drafts/08_synthesis.md",
-        "conditions": "nanopubs/drafts/08_synthesis.md",
-        "limitations": "nanopubs/drafts/08_synthesis.md",
-        "date": "CITATION.cff",
-        "topicSelection": "nanopubs/drafts/08_synthesis.md + Wikidata"
-      },
-      "published_uri": null
     }
   ],
   "carry_forward": [
@@ -259,13 +208,6 @@
       "from": "05_outcome",
       "into": "06_citation",
       "field": "work"
-    },
-    {
-      "from": "05_outcome",
-      "into": "08_synthesis",
-      "field": "sources",
-      "mode": "uriObjectList",
-      "itemKey": "source"
     }
   ]
 }
