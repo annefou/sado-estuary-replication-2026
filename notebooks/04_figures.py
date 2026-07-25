@@ -349,3 +349,72 @@ else:
 # turbidity result *confirms* the paper's confident limb, while the weak Chl-a
 # result *qualifies* its cautious limb — together they replicate the asymmetry
 # itself, which is the paper's real headline (`nanopubs/drafts/00_paper_summary.md`).
+
+# %% [markdown]
+# # Spatial view — a single-scene turbidity field (paper Fig 10 analogue)
+#
+# One clear scene (Sentinel-2A, **2020-04-20**, tile T31UET, 0 % cloud), atmospherically
+# corrected with Acolite and turned into a turbidity field via the native Nechad (2009)
+# 783 nm product (aN783), coarsened to ~150 m. It shows the along-estuary turbidity
+# structure the strong-turbidity result rests on — high in the turbid inner estuary,
+# lower toward the mouth — with the six stations overlaid. The full 10 m L2W is kept
+# locally for the HEALPix follow-up; the coarsened field
+# (`results/turbidity_field_20200420.nc`) keeps this figure reproducible in the book.
+
+
+# %%
+def make_field_map():
+    """Turbidity field over the estuary from one Acolite-corrected scene, with the
+    stations overlaid. Reads the committed coarsened field; degrades to plain axes
+    if Natural Earth coastlines can't be fetched."""
+    fp = RESULTS_DIR / "turbidity_field_20200420.nc"
+    if not fp.exists():
+        print(f"field-map data absent ({fp}); skipping")
+        return
+    import xarray as xr
+    ds = xr.open_dataset(fp)
+    vmax = float(np.nanpercentile(ds["turbidity"].values, 98))
+
+    in_situ = pd.read_parquet(RAW_DIR / "rws_in_situ_westerschelde.parquet")
+    sta = in_situ[["station_name", "lat", "lon"]].drop_duplicates("station_name")
+    extent = [3.48, 4.32, 51.31, 51.57]
+
+    try:
+        import cartopy.crs as ccrs
+        import cartopy.feature as cfeature
+        proj = ccrs.PlateCarree()
+        fig, ax = plt.subplots(figsize=(9.2, 4.8), subplot_kw={"projection": proj})
+        ax.set_extent(extent, crs=proj)
+        ax.add_feature(cfeature.LAND.with_scale("10m"), facecolor="#eae6df", zorder=0)
+        pm = ax.pcolormesh(ds["lon"], ds["lat"], ds["turbidity"], cmap="YlOrBr",
+                           vmin=0, vmax=vmax, shading="auto", transform=proj, zorder=1)
+        ax.coastlines("10m", linewidth=0.5, color="#6b7b86", zorder=2)
+        gl = ax.gridlines(draw_labels=True, linewidth=0.3, color="0.85")
+        gl.top_labels = gl.right_labels = False
+        tkw = {"transform": proj}
+    except Exception as exc:  # offline / Natural Earth unavailable
+        print(f"cartopy basemap unavailable ({type(exc).__name__}: {exc}); plain axes")
+        fig, ax = plt.subplots(figsize=(9.2, 4.8))
+        pm = ax.pcolormesh(ds["lon"], ds["lat"], ds["turbidity"], cmap="YlOrBr",
+                           vmin=0, vmax=vmax, shading="auto")
+        ax.set_xlim(extent[0], extent[1])
+        ax.set_ylim(extent[2], extent[3])
+        ax.set_xlabel("Longitude (°E)")
+        ax.set_ylabel("Latitude (°N)")
+        tkw = {}
+
+    ax.scatter(sta["lon"], sta["lat"], s=45, facecolor="none", edgecolor="k",
+               linewidth=1.1, zorder=5, **tkw)
+    for _, r in sta.iterrows():
+        ax.text(r["lon"] + 0.006, r["lat"] + 0.004, r["station_name"],
+                fontsize=7.5, zorder=6, **tkw)
+    cb = fig.colorbar(pm, ax=ax, shrink=0.82, pad=0.02, extend="max")
+    cb.set_label("turbidity, aN783 (FNU)")
+    ax.set_title("Sentinel-2 turbidity field — Westerschelde, 2020-04-20 (Acolite + Nechad)")
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "field_map.png", dpi=150, bbox_inches="tight")
+    fig.savefig(FIGURES_DIR / "field_map.pdf", bbox_inches="tight")
+    plt.show()  # required for MyST inline display
+
+
+make_field_map()
