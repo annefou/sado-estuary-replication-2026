@@ -1,0 +1,185 @@
+{
+  "schema_version": "1.0",
+  "kind": "forrt-chain-draft",
+  "chain_shape": "paper-rooted",
+  "source": {
+    "repository": "https://github.com/annefou/sado-estuary-replication-2026",
+    "commit": "783758a1fcac7eb1375095ed6aade83d387103f3",
+    "figure": "figures/main_result.png"
+  },
+  "steps": [
+    {
+      "step": "01_quote",
+      "template_key": "ANNOTATE_QUOTATION",
+      "template_uri": "https://w3id.org/np/RA24onqmqTMsraJ7ypYFOuckmNWpo4Zv5gsLqhXt7xYPU",
+      "prefill": {
+        "paper": "10.3390/rs13051043",
+        "quotation": "The turbidity product showed high consistency with in situ observations, proving the great capabilities of the MSI sensor to monitor this important water quality parameter. However, for the key parameter Chl-a further research is needed, with a more complete set of match-ups.",
+        "comment": "The abstract hedges; this sentence does not. It commits to a parameter-dependent verdict, and that is what decides whether Sentinel-2 MSI is operationally usable under the Water Framework Directive: a sensor trustworthy for one variable but not another is a different monitoring proposition from one that simply works. The sentence is also unusually testable, because it names the evidence that would settle it — a more complete set of match-ups for Chl-a. Claims that specify their own remedy are rare and worth acting on. This replication applies the same processing chains to an independent estuary and an independent in situ reference, and asks whether the parameter-dependent verdict holds."
+      },
+      "provenance": {
+        "paper": "CITATION.cff",
+        "quotation": "nanopubs/drafts-turbidity/01_quote.md",
+        "comment": "nanopubs/drafts-turbidity/01_quote.md"
+      },
+      "published_uri": null
+    },
+    {
+      "step": "02_aida",
+      "template_key": "AIDA_SENTENCE",
+      "template_uri": "https://w3id.org/np/RALmXhDw3rHcMveTgbv8VtWxijUHwnSqhCmtJFIPKWVaA",
+      "prefill": {
+        "aida": "Sentinel-2 MSI imagery reliably retrieves turbidity in estuarine waters.",
+        "topic": [
+          {
+            "uri": "http://www.wikidata.org/entity/Q898574",
+            "label": "turbidity"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q199687",
+            "label": "remote sensing"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q47053",
+            "label": "estuary"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q4302480",
+            "label": "Sentinel-2"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q625376",
+            "label": "water quality"
+          }
+        ]
+      },
+      "provenance": {
+        "aida": "nanopubs/drafts-turbidity/02_aida.md",
+        "topic": "nanopubs/drafts-turbidity/02_aida.md + Wikidata"
+      },
+      "published_uri": null
+    },
+    {
+      "step": "03_claim",
+      "template_key": "FORRT_CLAIM",
+      "template_uri": "https://w3id.org/np/RAZWyM8D16ya3S1zhCvrG1f0iSpd9-8onVWp0FTvvX7LQ",
+      "prefill": {
+        "claim": "sentinel2-msi-turbidity-retrieval-reliable-estuary",
+        "label": "Reliable Sentinel-2 MSI turbidity retrieval in estuarine waters",
+        "forrtType": "https://w3id.org/sciencelive/o/terms/model_performance-FORRT-Claim",
+        "source": "https://doi.org/10.3390/rs13051043"
+      },
+      "provenance": {
+        "claim": "nanopubs/drafts-turbidity/03_claim.md",
+        "label": "nanopubs/drafts-turbidity/03_claim.md",
+        "forrtType": "nanopubs/drafts-turbidity/03_claim.md",
+        "source": "CITATION.cff"
+      },
+      "manual": [
+        "forrtType"
+      ],
+      "published_uri": null
+    },
+    {
+      "step": "04_study",
+      "template_key": "FORRT_REPLICATION",
+      "template_uri": "https://w3id.org/np/RAuLEjPp-4dTvPwMkfHggTto1CgjIftiGRAgHlyeEonjQ",
+      "prefill": {
+        "study": "turbidity-open-source-westerschelde-replication",
+        "label": "Open-source Sentinel-2 turbidity retrieval validated against in situ data in the Westerschelde estuary",
+        "type": "https://w3id.org/sciencelive/o/terms/Replication-Study",
+        "scope": "This study tests only the turbidity limb of the original claim: the assertion\nthat Sentinel-2 MSI retrieval of turbidity is the strong side of a parameter-\ndependent accuracy — that turbidity is highly consistent with in situ observations,\ndemonstrating the sensor's capability to monitor this water quality parameter. In\nscope is whether an independent, satellite-derived turbidity product agrees with\ncoincident in situ turbidity measurements in a mesotidal, well-mixed, turbid\nestuary, and whether the original study's strong-turbidity finding still holds when\nthe retrieval chain is fully open source and transferred to a different estuary and\na longer period. Out of scope, and left to separate atomic chains, are the\nchlorophyll-a, suspended-particulate-matter and coloured-dissolved-organic-matter\nlimbs of the paper's asymmetry, the seasonal time-series analysis, and any\ngrid-sensitivity (HEALPix / DGGS) representation of the corrected fields.",
+        "methodology": "The satellite half of the paper's turbidity pipeline is reproduced with a fully\nopen-source chain (the \"aN783\" chain) and validated against an independent in situ\nreference. Sentinel-2 A/B/C Level-1C granules over the Westerschelde estuary are\natmospherically corrected with Acolite to water-leaving reflectance, clipped to an\nestuary bounding box covering the along-axis stations. Turbidity is taken from\nAcolite's own native Nechad et al. (2009) turbidity product, the open-source\nanalogue of the paper's selected turbidity chain; the product is computed by\nAcolite with its published relative-spectral-response-convolved Nechad\ncoefficients rather than a hand-transcribed algorithm, and the near-infrared band\nnearest a 783 nm target is selected, matched by nearest wavelength to absorb the\nSentinel-2 A/B/C band-centre drift. At each in situ station a 3x3 pixel window is\ncut on the native 10 m UTM grid, with per-pixel quality control (water only, no\ncloud/shadow/glint, atmospheric-correction success), and the valid, finite pixels\nare averaged. Satellite retrievals are paired with coincident in situ turbidity\nfrom Rijkswaterstaat monitoring stations on station and time within a\nplus-or-minus two-hour window. Agreement is scored with the paper's metric suite\n(coefficient of determination, slope, intercept, RMSE, bias, unbiased RMS,\nabsolute and relative percentage difference); unlike the chlorophyll-a limb, the\nregression-family metrics for turbidity are computed on untransformed values in\nlinear space, not in log10 space, since turbidity does not span the orders of\nmagnitude that motivate the log transform for chlorophyll-a. Statistics are\nreported both over the full Sentinel-2 record and over the original study's\nfield-campaign window, to separate the effect of changing the period from the\neffect of changing the site.",
+        "deviation": "Five deliberate deviations, each recorded rather than hidden:\n\n1. Atmospheric-correction processor. The paper selected C2RCC for its turbidity\n   result (the \"cN783\" chain, C2RCC + Nechad 2009). C2RCC exists only inside ESA\n   SNAP and crashes natively in the container, so it is excluded; this replication\n   runs Acolite instead, making the chain \"aN783\" (Acolite + Nechad 2009), an\n   open-source analogue. Note the original study itself reports Acolite as its\n   worst-performing atmospheric-correction processor, so a strong turbidity result\n   obtained through Acolite here would be a notable outcome rather than an expected\n   one.\n\n2. Site. Validation is in the Westerschelde estuary, not the Sado, because the Sado\n   in situ match-up data are available only on request (paper Data Availability\n   Statement) and no open, contemporaneous, in-estuary substitute exists. The\n   Westerschelde is a comparable mesotidal, well-mixed, turbid estuary.\n\n3. Period. The record spans January 2016 to July 2026 (the full Sentinel-2 era),\n   not the original's March 2018 to March 2020 field campaign, to gain a more\n   complete set of match-ups.\n\n4. In situ reference. Coincident turbidity comes from Rijkswaterstaat routine\n   monitoring stations, not the original AQUASado sampling campaign.\n\n5. Fully open-source chain. Every step (Sentinel-2 L1C, Acolite, the native Nechad\n   2009 turbidity product) is open and reproducible, whereas the original's\n   selected chain depends on the proprietary SNAP/C2RCC processor."
+      },
+      "provenance": {
+        "study": "nanopubs/drafts-turbidity/04_study.md",
+        "label": "nanopubs/drafts-turbidity/04_study.md",
+        "type": "nanopubs/drafts-turbidity/04_study.md",
+        "scope": "nanopubs/drafts-turbidity/04_study.md",
+        "methodology": "nanopubs/drafts-turbidity/04_study.md",
+        "deviation": "nanopubs/drafts-turbidity/04_study.md"
+      },
+      "manual": [
+        "type"
+      ],
+      "published_uri": null
+    },
+    {
+      "step": "05_outcome",
+      "template_key": "FORRT_REPLICATION_OUTCOME",
+      "template_uri": "https://w3id.org/np/RA2zljn0Nw9SadppOyxZoh-_Rxosslrq-vYG-p9SttnJE",
+      "prefill": {
+        "outcome": "turbidity-strong-limb-open-source-westerschelde",
+        "label": "Open-source Sentinel-2 turbidity retrieval in the Westerschelde confirms the Sado strong-turbidity finding",
+        "repo": "https://doi.org/10.5281/zenodo.21561994",
+        "date": "2026-07-25",
+        "validationStatus": "https://w3id.org/sciencelive/o/terms/Validated",
+        "conclusion": "This replication confirms the original claim. Sent et al. (2021) found that\nSentinel-2 MSI retrieves water-quality parameters with parameter-dependent\naccuracy — strong for turbidity, weak for chlorophyll-a — and selected a\nC2RCC + Nechad (cN783) chain that retrieved turbidity in strong agreement with in\nsitu (R² = 0.84). Testing that turbidity limb in an independent, more turbid\nestuary (the Westerschelde, 2016–2026) with a fully open-source\natmospheric-correction chain (Acolite + Nechad et al. 2010, the aN783 chain), we\nobtained strong agreement with in situ turbidity: R² = 0.92 with a near-unity\nslope (0.86), meeting and slightly exceeding the paper's proprietary result. This\nis the strong side of the parameter asymmetry the paper describes, and it\nreplicates even open-source: an operationally reproducible chain that uses no\nproprietary processor recovers estuarine turbidity at, and slightly beyond, the\naccuracy of the paper's selected cN783 chain, in a different optical regime.",
+        "evidence": "From results/turbidity_satellite_acolite.parquet, agreement computed in linear\nspace (scripts/matchup_stats.py), matching the paper's linear treatment of\nturbidity (turbidity is reported in FNU on both sides — no unit conversion):\n\n  N = 11 match-ups\n  R²    = 0.92   (ours, aN783)      vs  R² = 0.84   (original, selected cN783)\n  slope = 0.86   (near unity)\n  RMSE  = 10.13  FNU\n  BIAS  = +6.91  FNU  (slight overestimate)\n\nThe open-source Acolite + Nechad (aN783) chain therefore meets and slightly\nexceeds the original study's selected C2RCC + Nechad (cN783) R² of 0.84, with a\nnear-unity regression slope, in a different and more turbid estuary. The small\npositive bias (+6.91 FNU) indicates a mild systematic overestimate but does not\ndegrade the correlation. Turbidity is the strong side of the parameter asymmetry\nseen across the three retrieved parameters. Match-up figure: figures/asymmetry.png.",
+        "confidenceLevel": "https://w3id.org/sciencelive/o/terms/HighConfidence",
+        "limitations": "Four factors bound this conclusion.\n\n1. Sample size. N = 11 turbidity match-ups is small — fewer valid pairs than the\n   Chl-a limb (N = 33), and comparable to the original (N = 19–21). The R² = 0.92\n   therefore carries a wide confidence interval. The direction of the result\n   (strong agreement, meeting/exceeding the original) is robust; its precise\n   magnitude is not.\n\n2. Processor rating. The paper reports Acolite as its worst-performing\n   atmospheric-correction processor, yet here the open-source Acolite + Nechad\n   chain matches and slightly exceeds the paper's selected C2RCC + Nechad result.\n   That is a notable finding, but a single-site one — it should not be read as a\n   general claim that Acolite outperforms C2RCC for turbidity everywhere.\n\n3. Site and period change. This is a Replication, not a Reproduction: the Sado in\n   situ data are not public (paper Data Availability Statement), so we validated in\n   the Westerschelde (2016–2026), a different and more turbid mesotidal estuary.\n   A different optical regime tests generalisability, not the correctness of the\n   original analysis. Agreement was computed in linear space, matching the paper's\n   treatment of turbidity.\n\n4. Systematic bias. The retrieval carries a slight positive bias (+6.91 FNU), a\n   mild overestimate that does not degrade the correlation but should be noted for\n   any quantitative use.\n\nA grid-sensitivity check on a HEALPix / DGGS (GRID4EARTH) representation of the\ncorrected fields is deliberately out of scope here and deferred to a separate\nfollow-up chain that will extend this one, so the primary validation stays on the\nnative Sentinel-2 grid."
+      },
+      "provenance": {
+        "outcome": "nanopubs/drafts-turbidity/05_outcome.md",
+        "label": "nanopubs/drafts-turbidity/05_outcome.md",
+        "repo": "CITATION.cff",
+        "date": "CITATION.cff",
+        "validationStatus": "nanopubs/drafts-turbidity/05_outcome.md",
+        "conclusion": "nanopubs/drafts-turbidity/05_outcome.md",
+        "evidence": "nanopubs/drafts-turbidity/05_outcome.md",
+        "confidenceLevel": "nanopubs/drafts-turbidity/05_outcome.md",
+        "limitations": "nanopubs/drafts-turbidity/05_outcome.md"
+      },
+      "manual": [
+        "validationStatus",
+        "confidenceLevel"
+      ],
+      "published_uri": null
+    },
+    {
+      "step": "06_citation",
+      "template_key": "CITATION_CITO",
+      "template_uri": "https://w3id.org/np/RA43F9EoOuzF0xoNUnCMNyFsfIqlsuWDdPHCnN0wCdCAw",
+      "prefill": {
+        "st02": [
+          {
+            "cites": "http://purl.org/spar/cito/confirms",
+            "cited": "https://doi.org/10.3390/rs13051043"
+          }
+        ]
+      },
+      "provenance": {
+        "st02": "cites = validation status (see 05_outcome); cited = CITATION.cff references[article]"
+      },
+      "published_uri": null
+    }
+  ],
+  "carry_forward": [
+    {
+      "from": "01_quote",
+      "into": "02_aida",
+      "field": "project"
+    },
+    {
+      "from": "02_aida",
+      "into": "03_claim",
+      "field": "aida"
+    },
+    {
+      "from": "03_claim",
+      "into": "04_study",
+      "field": "claim"
+    },
+    {
+      "from": "04_study",
+      "into": "05_outcome",
+      "field": "study"
+    },
+    {
+      "from": "05_outcome",
+      "into": "06_citation",
+      "field": "work"
+    }
+  ]
+}
