@@ -39,6 +39,11 @@ credentials.*
 data/*
 !data/.gitkeep
 !data/README.md
+# ...except the small in-situ table 04_figures reads, so the Jupyter Book can
+# render the figures in CI without re-running the networked 01_data_download.
+!data/raw/
+data/raw/*
+!data/raw/rws_in_situ_westerschelde.parquet
 # Small provenance manifest of the match-up scenes (id, name, tile, cloud, s3path,
 # quantity). Committed so a fresh checkout / CI can fetch the exact granules
 # without re-running notebooks 01+02. The granules themselves stay ignored.

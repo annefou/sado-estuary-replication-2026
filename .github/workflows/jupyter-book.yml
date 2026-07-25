@@ -58,15 +58,14 @@ jobs:
             pixi run jupytext --to notebook "$nb"
           done
 
-      # Glob, not a hard-coded list — new notebooks are picked up automatically.
-      - name: Execute notebooks
+      # The book renders the RESULTS, so it executes ONLY the figures notebook.
+      # It must not re-run the data-download / analysis notebooks: 01 does live
+      # CDSE scene discovery (flaky in CI) and 03 needs Acolite (container-only).
+      # 04 reads committed small inputs (the in-situ table, the result parquets,
+      # the coarsened turbidity field), so it runs offline; 01-03 render as code.
+      - name: Execute the figures notebook
         if: steps.guard.outputs.ready == 'true'
-        run: |
-          for nb in notebooks/*.ipynb; do
-            echo "::group::Executing $nb"
-            pixi run jupyter execute --inplace "$nb"
-            echo "::endgroup::"
-          done
+        run: pixi run jupyter execute --inplace notebooks/04_figures.ipynb
 
       - name: Build MyST site
         if: steps.guard.outputs.ready == 'true'
