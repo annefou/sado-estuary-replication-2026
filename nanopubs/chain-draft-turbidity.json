@@ -4,7 +4,7 @@
   "chain_shape": "paper-rooted",
   "source": {
     "repository": "https://github.com/annefou/sado-estuary-replication-2026",
-    "commit": "71476b856c9d448e2a6a8dcb5c7f22249ecc2005",
+    "commit": "dbbe654899ad3a6ccd78a15a5d843acbd861c526",
     "figure": "figures/main_result.png"
   },
   "steps": [
@@ -22,7 +22,7 @@
         "quotation": "nanopubs/drafts-turbidity/01_quote.md",
         "comment": "nanopubs/drafts-turbidity/01_quote.md"
       },
-      "published_uri": null
+      "published_uri": "https://w3id.org/sciencelive/np/RAXx0A9g5UJ5AM686y-9FOn5bwEdmb45xqhgVoNkCo3Pc"
     },
     {
       "step": "02_aida",
