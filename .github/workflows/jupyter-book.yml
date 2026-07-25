@@ -58,14 +58,23 @@ jobs:
             pixi run jupytext --to notebook "$nb"
           done
 
-      # The book renders the RESULTS, so it executes ONLY the figures notebook.
-      # It must not re-run the data-download / analysis notebooks: 01 does live
-      # CDSE scene discovery (flaky in CI) and 03 needs Acolite (container-only).
-      # 04 reads committed small inputs (the in-situ table, the result parquets,
-      # the coarsened turbidity field), so it runs offline; 01-03 render as code.
-      - name: Execute the figures notebook
+      # Glob, not a hard-coded list — new notebooks are picked up automatically.
+      - name: Execute notebooks
         if: steps.guard.outputs.ready == 'true'
-        run: pixi run jupyter execute --inplace notebooks/04_figures.ipynb
+        env:
+          # CDSE credentials so 01 authenticates and the pipeline can fetch
+          # granules. secrets ARE readable in a step `env:` (unlike a step `if:`)
+          # — see the note in ci.yml. Undefined secrets just come through empty.
+          CDSE_USERNAME: ${{ secrets.CDSE_USERNAME }}
+          CDSE_PASSWORD: ${{ secrets.CDSE_PASSWORD }}
+          CDSE_S3_ACCESS_KEY: ${{ secrets.CDSE_S3_ACCESS_KEY }}
+          CDSE_S3_SECRET_KEY: ${{ secrets.CDSE_S3_SECRET_KEY }}
+        run: |
+          for nb in notebooks/*.ipynb; do
+            echo "::group::Executing $nb"
+            pixi run jupyter execute --inplace "$nb"
+            echo "::endgroup::"
+          done
 
       - name: Build MyST site
         if: steps.guard.outputs.ready == 'true'

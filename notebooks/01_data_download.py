@@ -314,12 +314,25 @@ def query_s2_scenes(max_cloud: int = 60) -> pd.DataFrame:
 
 
 # %%
-try:
-    scenes = query_s2_scenes()
-    scenes.to_parquet(RAW_DIR / "s2_l1c_scene_index.parquet", index=False)
-    print(f"{len(scenes)} Sentinel-2 L1C scenes over the Westerschelde, {PERIOD_START[:10]}–{PERIOD_END[:10]}")
-except requests.RequestException as exc:  # catalogue unreachable -> don't kill the notebook
-    scenes = pd.DataFrame()
+# The CDSE catalogue query is anonymous but network-dependent. A transient outage
+# used to be swallowed (scenes left empty, no index written), which then surfaced
+# as a confusing FileNotFoundError in a downstream cell. Retry, then fail loudly.
+import time
+
+last_exc = None
+for attempt in range(1, 4):
+    try:
+        scenes = query_s2_scenes()
+        scenes.to_parquet(RAW_DIR / "s2_l1c_scene_index.parquet", index=False)
+        print(f"{len(scenes)} Sentinel-2 L1C scenes over the Westerschelde, {PERIOD_START[:10]}–{PERIOD_END[:10]}")
+        break
+    except requests.RequestException as exc:  # transient catalogue outage
+        last_exc = exc
+        print(f"CDSE catalogue query failed (attempt {attempt}/3): {exc}", flush=True)
+        if attempt < 3:
+            time.sleep(10 * attempt)
+else:
+    raise RuntimeError(f"CDSE catalogue unreachable after 3 attempts: {last_exc}")
     print(f"Scene query failed ({exc}). The in situ reference above is unaffected.")
 
 # %% [markdown]
