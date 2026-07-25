@@ -7,7 +7,7 @@
 **Documented field list (from `docs/forrt-form-fields.md` § FORRT Claim, verbatim):**
 `Short URI suffix as claim ID` (required) · `Label of the claim (to find it later)` (required) · `Search for an AIDA sentence` (required) · `Type of FORRT claim` (required, 7 options) · `Source URI` (optional). There are no other substantive fields below "Source URI" — only a "publish as example" toggle.
 
-This draft is the **chlorophyll-a limb** of the chain (the turbidity limb is a separate atomic Claim). It declares, as a FORRT Claim, the paper's chlorophyll-a finding that the settled step-02 AIDA states: *"Sentinel-2 MSI imagery does not reliably retrieve chlorophyll-a concentration in turbid estuarine waters."* The Claim is the claim **under test**, i.e. Sent et al. (2021)'s assertion — not our replication result. No numbers here; those live only in `05_outcome.md`.
+This draft is the **turbidity limb** of the chain (the chlorophyll-a limb is a separate atomic Claim in `nanopubs/drafts/`). It declares, as a FORRT Claim, the paper's turbidity finding that the settled step-02 AIDA states: *"Sentinel-2 MSI imagery reliably retrieves turbidity in estuarine waters."* The Claim is the claim **under test**, i.e. Sent et al. (2021)'s assertion — not our replication result. No numbers here; those live only in `05_outcome.md`.
 
 ## Field-by-field draft
 
@@ -17,7 +17,7 @@ This draft is the **chlorophyll-a limb** of the chain (the turbidity limb is a s
 Slug becomes part of the nanopub URI. Use kebab-case.
 
 ```
-sentinel2-msi-chla-retrieval-unreliable-turbid-estuary
+sentinel2-msi-turbidity-retrieval-reliable-estuary
 ```
 
 <!-- field: label -->
@@ -26,7 +26,7 @@ sentinel2-msi-chla-retrieval-unreliable-turbid-estuary
 A descriptive title (not a sentence). Used for searches/discovery.
 
 ```
-Unreliable Sentinel-2 MSI chlorophyll-a retrieval in turbid estuarine waters
+Reliable Sentinel-2 MSI turbidity retrieval in estuarine waters
 ```
 
 <!-- field: aida -->
@@ -51,25 +51,6 @@ URI of the AIDA published in step 02.
 
 Pick one. See `docs/claim-type-vocabulary.md` for the seven options and how to choose.
 
-
-> **Why `model performance`.** The claim asserts how well a retrieval method — the
-> Sentinel-2 MSI plus a bio-optical algorithm, an instrument/model producing
-> chlorophyll-a estimates — reproduces a known quantity. "Does not reliably retrieve"
-> is an accuracy statement, evidenced by agreement metrics (R², slope, RMSE) between
-> the satellite product and an in situ reference. That is a retrieval-accuracy /
-> evaluation-metric claim about the retrieval model, which the vocabulary defines as
-> *model performance (accuracy, F1 score, evaluation metrics)*.
->
-> **Not `descriptive pattern`:** that genre is for an observed empirical relationship
-> between world variables (e.g. thermal exposure correlates with extirpation). This
-> claim is about how accurately a sensor/algorithm measures chlorophyll-a, not a
-> natural correlation. **Not `statistical significance`:** the claim is not "a test is
-> significant"; it is about retrieval reliability. **Not `data quality`:** that covers
-> fidelity preserved through a preprocessing transformation (e.g. a DGGS conversion),
-> whereas this is end-to-end retrieval accuracy against ground truth. Controlled term
-> copied verbatim from `nanopubs/templates/fields.snapshot.json`
-> (`model_performance-FORRT-Claim`).
-
 - [ ] computational performance (Computational & Performance)
 - [ ] data governance (access control, licensing, FAIR compliance)
 - [ ] data quality (preprocessing, validation, normalization)
@@ -77,6 +58,27 @@ Pick one. See `docs/claim-type-vocabulary.md` for the seven options and how to c
 - [x] model performance (accuracy, F1 score, evaluation metrics)
 - [ ] scalability (Computational & Performance)
 - [ ] statistical significance (significant difference, relationship, or effect)
+
+> **Why `model performance`.** The claim asserts how well a retrieval method — the
+> Sentinel-2 MSI plus a bio-optical algorithm, an instrument/model producing
+> turbidity estimates — reproduces a known quantity. "Reliably retrieves" is an
+> accuracy statement, evidenced by agreement metrics (R², slope, RMSE) between the
+> satellite product and an in situ reference. That is a retrieval-accuracy /
+> evaluation-metric claim about the retrieval model, which the vocabulary defines as
+> *model performance (accuracy, F1 score, evaluation metrics)*. This is the positive
+> mirror of the chlorophyll-a limb, which ticked the same type for the same reason:
+> both limbs make a claim about how accurately the MSI-plus-algorithm chain retrieves
+> a known water-quality parameter — the sign of the verdict differs, the genre does not.
+>
+> **Not `descriptive pattern`:** that genre is for an observed empirical relationship
+> between world variables (e.g. thermal exposure correlates with extirpation). This
+> claim is about how accurately a sensor/algorithm measures turbidity, not a natural
+> correlation. **Not `statistical significance`:** the claim is not "a test is
+> significant"; it is about retrieval reliability. **Not `data quality`:** that covers
+> fidelity preserved through a preprocessing transformation (e.g. a DGGS conversion),
+> whereas this is end-to-end retrieval accuracy against ground truth. Controlled term
+> copied verbatim from `nanopubs/templates/fields.snapshot.json`
+> (`model_performance-FORRT-Claim`).
 
 <!-- field: source -->
 ### Source URI (text input, optional)
@@ -87,9 +89,8 @@ Full URL form: `https://doi.org/...` (NOT bare DOI).
 > populates `source` from `CITATION.cff` (`references[article].doi`,
 > `10.3390/rs13051043`) as the full URL `https://doi.org/10.3390/rs13051043`
 > (`docs/chain-draft-contract.md` § metadata; script line ~199, `source` → external
-> URL of the paper DOI). Verified this session: the DOI is present in `CITATION.cff`
-> references and resolves (HTTP 302 → mdpi.com/2072-4292/13/5/1043). Left empty here so
-> the build script is the single source of truth.
+> URL of the paper DOI). Left empty here so the build script is the single source of
+> truth.
 
 ```
 
@@ -97,4 +98,4 @@ Full URL form: `https://doi.org/...` (NOT bare DOI).
 
 ## Publication note
 
-After publishing, paste the resulting URI into `nanopubs/PUBLISHED.md` step 03.
+After publishing, paste the resulting URI into `nanopubs/PUBLISHED.md` step 03 (turbidity limb).

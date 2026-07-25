@@ -1,4 +1,4 @@
-# 06 — CiTO Citation (chlorophyll-a limb)
+# 06 — CiTO Citation (turbidity limb)
 
 > Run the pre-flight checklist in `docs/forrt-form-fields.md` § Pre-flight checklist before drafting.
 
@@ -13,7 +13,7 @@
 | ↳ Citation Type | dropdown | A CiTO relation URI from the controlled list. |
 | ↳ DOI or other URL of the cited work | text input | DOI URL form `https://doi.org/10.x/y`. |
 
-> **Scope:** this CiTO citation closes the **chlorophyll-a limb** only. The turbidity limb has its own separate CiTO citation. Do not fold the two into one.
+> **Scope:** this CiTO citation closes the **turbidity limb** only. The chlorophyll-a limb has its own separate CiTO citation. Do not fold the two into one.
 
 ## Field-by-field draft
 
@@ -38,7 +38,7 @@ One citation row. Per the contract the platform field is `st02`, an array of
 ```
 st02 = [
   {
-    "cites": "http://purl.org/spar/cito/qualifies",
+    "cites": "http://purl.org/spar/cito/confirms",
     "cited": "https://doi.org/10.3390/rs13051043"
   }
 ]
@@ -48,26 +48,27 @@ st02 = [
 
 ##### Citation Type (dropdown) — `cites`
 
-**Value: `qualifies`** → `http://purl.org/spar/cito/qualifies`
+**Value: `confirms`** → `http://purl.org/spar/cito/confirms`
 
 Derived from the step-05 Outcome's validation status. `05_outcome.md` records the
-status as **partially supported**, and the documented mapping is
-PartiallySupported → `qualifies` (`docs/forrt-form-fields.md` § Mapping rule for
-FORRT Outcomes; `05_outcome.md` line 69). `build_chain_draft.py` fills this field
+status as **validated**, and the documented mapping is
+Validated → `confirms` (`docs/forrt-form-fields.md` § Mapping rule for
+FORRT Outcomes; `05_outcome.md` line 78). `build_chain_draft.py` fills this field
 itself, reading the Outcome status and applying
-`RELATION_FROM_STATUS["PartiallySupported"] = cito/qualifies` — so the value below
+`RELATION_FROM_STATUS["Validated"] = cito/confirms` — so the value below
 is not hand-authored into `st02`, it is derived. It is recorded here for review.
 
-**Justification:** the open-source `aGS` Sentinel-2 chain found no useful
-chlorophyll-a agreement (R² ≈ 0.10) in the Westerschelde. This does not contradict
-Sent et al. (2021) — the paper's own conclusion flags chlorophyll-a as the weak
-parameter needing further research, we never ran the paper's selected `cGS`
-(C2RCC) chain, and the paper reports Acolite as its worst processor. The result
-therefore *supports and extends* the paper's caution rather than disputing it:
-`qualifies`, not `disputes`.
+**Justification:** the open-source `aN783` chain (Acolite + Nechad et al. 2010)
+reproduces the paper's strong turbidity finding in an independent, more turbid
+estuary (the Westerschelde), obtaining R² = 0.92 with a near-unity slope — meeting
+and slightly exceeding the paper's selected `cN783` (C2RCC + Nechad) result of
+R² = 0.84. The paper made turbidity its reliably retrievable parameter, and that
+finding holds even when the proprietary C2RCC step is replaced by an open-source
+processor. The result therefore *supports and reproduces* the paper's finding
+rather than merely refining it: `confirms`, not `qualifies`.
 
 ```
-http://purl.org/spar/cito/qualifies
+http://purl.org/spar/cito/confirms
 ```
 
 ##### DOI or other URL of the cited work (text input) — `cited`
@@ -84,7 +85,7 @@ https://doi.org/10.3390/rs13051043
 
 #### Additional citations (optional)
 
-None. This limb cites only the original paper it qualifies.
+None. This limb cites only the original paper it confirms.
 
 *(skip — optional)*
 
@@ -92,5 +93,5 @@ None. This limb cites only the original paper it qualifies.
 
 After publishing, paste the resulting URI into `nanopubs/PUBLISHED.md` step 06.
 
-This completes the chlorophyll-a limb of the FORRT chain. The turbidity limb
+This completes the turbidity limb of the FORRT chain. The chlorophyll-a limb
 carries its own separate CiTO citation.

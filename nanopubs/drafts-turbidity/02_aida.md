@@ -1,4 +1,4 @@
-# 02 — AIDA Sentence
+# 02 — AIDA Sentence (turbidity limb)
 
 > Run the pre-flight checklist in `docs/forrt-form-fields.md` § Pre-flight checklist before drafting.
 
@@ -14,10 +14,11 @@
 | Supported by datasets | repeatable group, **optional** |
 | Supported by other publications | repeatable group, **optional** |
 
-> **This is the Chl-a limb.** The Quote (step 01) carries the paper's turbidity/Chl-a
-> asymmetry, but an AIDA must be atomic, so it anchors on one limb only. Per the SETTLED
-> anchor note in `01_quote.md`, this chain's AIDA states the paper's **chlorophyll-a**
-> finding — the weak, contested limb. Turbidity is a separate AIDA in a separate drafts set.
+> **This is the turbidity limb.** The Quote (step 01) carries the paper's turbidity/Chl-a
+> asymmetry, but an AIDA must be atomic, so it anchors on one limb only. This chain states the
+> paper's **turbidity** finding — the strong, positive limb ("high consistency with in situ
+> observations, proving the great capabilities of the MSI sensor"). Chlorophyll-a is a separate
+> AIDA in the separate `nanopubs/drafts/` set and is not mentioned here.
 
 ## Field-by-field draft
 
@@ -29,20 +30,22 @@ Atomic, Independent, Declarative, Absolute. One empirical finding. Must end with
 > _If your draft AIDA contains "and" linking two distinct findings, split into two AIDA nanopubs._
 
 ```
-Sentinel-2 MSI imagery does not reliably retrieve chlorophyll-a concentration in turbid estuarine waters.
+Sentinel-2 MSI imagery reliably retrieves turbidity in estuarine waters.
 ```
 
 > **This is the claim under test, not our result.** The sentence states Sent et al. (2021)'s
-> chlorophyll-a finding — that MSI Chl-a retrieval is the weak, unreliable limb ("for the key
-> parameter Chl-a further research is needed"). Our replication numbers (N, R²) live only in
-> `05_outcome.md`; they are deliberately absent here.
+> turbidity finding — that MSI turbidity retrieval is the strong, consistent limb ("high
+> consistency with in situ observations, proving the great capabilities of the MSI sensor"). Our
+> replication numbers (N, R²) live only in `05_outcome.md`; they are deliberately absent here.
+> The sentence drops the "turbid" qualifier the Chl-a mirror carries, because "turbidity in
+> turbid waters" is circular; "estuarine waters" is the correct, non-circular scope here.
 >
 > **Pre-write checklist (run per `docs/forrt-form-fields.md` and the AIDA pre-write table):**
 > - No numerical values — none. ✓
-> - No method names — no processor (Acolite/C2RCC/Polymer), no algorithm (Gons), no library. "Sentinel-2 MSI" is the sensor under evaluation, not a statistical method. ✓
+> - No method names — no processor (Acolite/C2RCC/Polymer), no algorithm (Nechad), no library. "Sentinel-2 MSI" is the sensor under evaluation, not a statistical method. ✓
 > - No cryptic identifiers — none. ✓
-> - World-talk, not model-talk — states a property of the world (the sensor does not reliably measure Chl-a there), not "the coefficient/model finds…". ✓
-> - One empirical finding — chlorophyll-a only; no "and"; turbidity is a separate AIDA. ✓
+> - World-talk, not model-talk — states a property of the world (the sensor does reliably measure turbidity there), not "the coefficient/model finds…". ✓
+> - One empirical finding — turbidity only; no "and"; chlorophyll-a is a separate AIDA. ✓
 > - Ends with a full stop. ✓
 
 <!-- field: topic -->
@@ -50,9 +53,11 @@ Sentinel-2 MSI imagery does not reliably retrieve chlorophyll-a concentration in
 
 Wikidata concept labels — the builder resolves each to a QID via `wbsearchentities`.
 Each label below was searched and type-checked as a concept (has P279 subclass-of) in this
-drafting session; works/persons/places returned by the same searches were rejected.
+drafting session; works/persons/places returned by the same searches were rejected
+(e.g. the *Estuary* paintings Q20442451 / Q112647535, the Saskatchewan hamlet Q5401883, the
+*Remote Sensing* journals, and the turbidity-current thesis/patent).
 
-- chlorophyll a
+- turbidity
 - remote sensing
 - estuary
 - Sentinel-2
@@ -62,7 +67,7 @@ drafting session; works/persons/places returned by the same searches were reject
 ### Relates to this nanopublication (search/select, required)
 
 URI of the nanopub the AIDA derives from — for this paper-rooted chain, the step 01
-Quote-with-comment URI.
+Quote-with-comment URI (the same shared Quote as the Chl-a limb).
 
 > **Left empty deliberately — carry-forward.** The chain wizard fills this automatically
 > with the published Quote URI once step 01 is published (`docs/chain-draft-contract.md`
@@ -78,7 +83,7 @@ Quote-with-comment URI.
 
 DOIs/URLs of datasets that ground the AIDA claim.
 
-*(skip — optional)* The AIDA states the paper's own chlorophyll-a claim; the dataset that
+*(skip — optional)* The AIDA states the paper's own turbidity claim; the dataset that
 grounds it is the AQUASado in situ match-up set, which is request-only (paper Data
 Availability Statement, p. 25) and has no citable DOI. Our replication datasets ground the
 Outcome, not this claim-under-test, so they belong in step 04/05, not here.
@@ -95,4 +100,4 @@ publications* are populated (`docs/forrt-form-fields.md` § AIDA, 2026-04-26).
 
 ## Publication note
 
-After publishing, paste the resulting URI into `nanopubs/PUBLISHED.md` step 02.
+After publishing, paste the resulting URI into `nanopubs/PUBLISHED.md` step 02 (turbidity limb).
