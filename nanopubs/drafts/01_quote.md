@@ -67,10 +67,10 @@ phrase here. Leave empty for a single short quote.
 Why this quote matters and what the replication tests. Connect the paper's claim to the work this repo does. Don't repeat the quote.
 
 ```
-The abstract hedges; this sentence does not. It commits to a parameter-dependent verdict, and that is what decides whether Sentinel-2 MSI is operationally usable under the Water Framework Directive: a sensor trustworthy for one variable but not another is a different monitoring proposition from one that simply works. The sentence is also unusually testable, because it names the evidence that would settle it — a more complete set of match-ups for Chl-a. Claims that specify their own remedy are rare and worth acting on. This replication applies the same processing chains to an independent estuary and an independent in situ reference, and asks whether the parameter-dependent verdict holds.
+The abstract hedges; this sentence does not. It commits to a parameter-dependent verdict — a sensor trustworthy for one water-quality variable but not another is a different monitoring proposition from one that simply works, and that decides whether Sentinel-2 MSI is operationally usable under the Water Framework Directive. The sentence is also unusually testable: it names the very evidence that would settle it, a more complete set of chlorophyll-a match-ups.
 ```
 
-Character count: 695 / 800.
+Character count: 463 / 500.
 
 > **No results in this field — deliberately.** The comment says why the quotation is worth
 > testing, not what we found. Sample sizes, match-up counts, R² values and site-specific

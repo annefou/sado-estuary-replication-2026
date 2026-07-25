@@ -4,7 +4,7 @@
   "chain_shape": "paper-rooted",
   "source": {
     "repository": "https://github.com/annefou/sado-estuary-replication-2026",
-    "commit": "783758a1fcac7eb1375095ed6aade83d387103f3",
+    "commit": "71476b856c9d448e2a6a8dcb5c7f22249ecc2005",
     "figure": "figures/main_result.png"
   },
   "steps": [
@@ -15,7 +15,7 @@
       "prefill": {
         "paper": "10.3390/rs13051043",
         "quotation": "The turbidity product showed high consistency with in situ observations, proving the great capabilities of the MSI sensor to monitor this important water quality parameter. However, for the key parameter Chl-a further research is needed, with a more complete set of match-ups.",
-        "comment": "The abstract hedges; this sentence does not. It commits to a parameter-dependent verdict, and that is what decides whether Sentinel-2 MSI is operationally usable under the Water Framework Directive: a sensor trustworthy for one variable but not another is a different monitoring proposition from one that simply works. The sentence is also unusually testable, because it names the evidence that would settle it — a more complete set of match-ups for Chl-a. Claims that specify their own remedy are rare and worth acting on. This replication applies the same processing chains to an independent estuary and an independent in situ reference, and asks whether the parameter-dependent verdict holds."
+        "comment": "The abstract hedges; this sentence does not. It commits to a parameter-dependent verdict — a sensor trustworthy for one water-quality variable but not another is a different monitoring proposition from one that simply works, and that decides whether Sentinel-2 MSI is operationally usable under the Water Framework Directive. The sentence is also unusually testable: it names the very evidence that would settle it, a more complete set of chlorophyll-a match-ups."
       },
       "provenance": {
         "paper": "CITATION.cff",
@@ -90,7 +90,33 @@
         "type": "https://w3id.org/sciencelive/o/terms/Replication-Study",
         "scope": "This study tests only the chlorophyll-a limb of the original claim: the assertion\nthat Sentinel-2 MSI retrieval of chlorophyll-a is the weak side of a parameter-\ndependent accuracy — that chlorophyll-a is the parameter for which further research\nand a more complete set of match-ups are still needed. In scope is whether an\nindependent, satellite-derived chlorophyll-a product agrees with coincident in situ\nchlorophyll-a measurements in a mesotidal, well-mixed, turbid estuary, and whether\nthe original study's weak-chlorophyll-a caution still holds when the retrieval chain\nis fully open source and transferred to a different estuary and a longer period.\nOut of scope, and left to separate atomic chains, are the turbidity, suspended-\nparticulate-matter and coloured-dissolved-organic-matter limbs of the paper's\nasymmetry, the seasonal time-series analysis, and any grid-sensitivity (HEALPix /\nDGGS) representation of the corrected fields.",
         "methodology": "The satellite half of the paper's pipeline is reproduced with a fully open-source\nchain (the \"aGS\" chain) and validated against an independent in situ reference.\nSentinel-2 A/B/C Level-1C granules over the Westerschelde estuary are\natmospherically corrected with Acolite to water-leaving reflectance, clipped to an\nestuary bounding box covering the along-axis stations. Chlorophyll-a is retrieved\nwith the Gons et al. (2005) red-edge three-band algorithm, using the 665, 705 and\n783 nm bands, transcribed from the original paper's Table 2; the bands are matched\nby nearest wavelength to absorb the Sentinel-2 A/B/C band-centre drift. At each in\nsitu station a 3x3 pixel window is cut on the native 10 m UTM grid, with per-pixel\nquality control (water only, no cloud/shadow/glint, atmospheric-correction success),\nand the valid pixels are averaged. Satellite retrievals are paired with coincident\nin situ chlorophyll-a from Rijkswaterstaat monitoring stations on station and time\nwithin a plus-or-minus two-hour window. Agreement is scored with the paper's metric\nsuite (coefficient of determination, slope, intercept, RMSE, bias, unbiased RMS,\nabsolute and relative percentage difference), with the regression-family metrics\ncomputed in log10 space for chlorophyll-a and the percentage-difference metrics on\nuntransformed values, exactly as the original specifies. Statistics are reported\nboth over the full Sentinel-2 record and over the original study's field-campaign\nwindow, to separate the effect of changing the period from the effect of changing\nthe site.",
-        "deviation": "Five deliberate deviations, each recorded rather than hidden:\n\n1. Atmospheric-correction processor. The paper selected C2RCC for its chlorophyll-a\n   time series (the \"cGS\" chain, C2RCC + Gons). C2RCC exists only inside ESA SNAP\n   and crashes natively in the container, so it is excluded; this replication runs\n   Acolite instead, making the chain \"aGS\" (Acolite + Gons), an open-source\n   analogue. Note the original study itself reports Acolite as its worst-performing\n   processor.\n\n2. Site. Validation is in the Westerschelde estuary, not the Sado, because the Sado\n   in situ match-up data are available only on request (paper Data Availability\n   Statement) and no open, contemporaneous, in-estuary substitute exists. The\n   Westerschelde is a comparable mesotidal, well-mixed, turbid estuary.\n\n3. Period. The record spans January 2016 to July 2026 (the full Sentinel-2 era),\n   not the original's March 2018 to March 2020 field campaign, to gain the \"more\n   complete set of match-ups\" the paper called for.\n\n4. In situ reference. Coincident chlorophyll-a comes from Rijkswaterstaat routine\n   monitoring stations, not the original AQUASado sampling campaign.\n\n5. Fully open-source chain. Every step (Sentinel-2 L1C, Acolite, the Gons algorithm)\n   is open and reproducible, whereas the original's selected chain depends on the\n   proprietary SNAP/C2RCC processor."
+        "deviation": "Five deliberate deviations, each recorded rather than hidden:\n\n1. Atmospheric-correction processor. The paper selected C2RCC for its chlorophyll-a\n   time series (the \"cGS\" chain, C2RCC + Gons). C2RCC exists only inside ESA SNAP\n   and crashes natively in the container, so it is excluded; this replication runs\n   Acolite instead, making the chain \"aGS\" (Acolite + Gons), an open-source\n   analogue. Note the original study itself reports Acolite as its worst-performing\n   processor.\n\n2. Site. Validation is in the Westerschelde estuary, not the Sado, because the Sado\n   in situ match-up data are available only on request (paper Data Availability\n   Statement) and no open, contemporaneous, in-estuary substitute exists. The\n   Westerschelde is a comparable mesotidal, well-mixed, turbid estuary.\n\n3. Period. The record spans January 2016 to July 2026 (the full Sentinel-2 era),\n   not the original's March 2018 to March 2020 field campaign, to gain the \"more\n   complete set of match-ups\" the paper called for.\n\n4. In situ reference. Coincident chlorophyll-a comes from Rijkswaterstaat routine\n   monitoring stations, not the original AQUASado sampling campaign.\n\n5. Fully open-source chain. Every step (Sentinel-2 L1C, Acolite, the Gons algorithm)\n   is open and reproducible, whereas the original's selected chain depends on the\n   proprietary SNAP/C2RCC processor.",
+        "keywordSelection": [
+          {
+            "uri": "http://www.wikidata.org/entity/Q133878",
+            "label": "chlorophyll a"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q625376",
+            "label": "water quality"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q47053",
+            "label": "estuary"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q4302480",
+            "label": "Sentinel-2"
+          },
+          {
+            "uri": "http://www.wikidata.org/entity/Q4817104",
+            "label": "atmospheric correction"
+          }
+        ],
+        "disciplineSelection": {
+          "uri": "http://www.wikidata.org/entity/Q199687",
+          "label": "remote sensing"
+        }
       },
       "provenance": {
         "study": "nanopubs/drafts/04_study.md",
@@ -98,7 +124,9 @@
         "type": "nanopubs/drafts/04_study.md",
         "scope": "nanopubs/drafts/04_study.md",
         "methodology": "nanopubs/drafts/04_study.md",
-        "deviation": "nanopubs/drafts/04_study.md"
+        "deviation": "nanopubs/drafts/04_study.md",
+        "keywordSelection": "nanopubs/drafts/04_study.md + Wikidata",
+        "disciplineSelection": "nanopubs/drafts/04_study.md + Wikidata"
       },
       "manual": [
         "type"

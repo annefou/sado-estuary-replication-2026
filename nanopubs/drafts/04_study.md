@@ -138,18 +138,18 @@ Five deliberate deviations, each recorded rather than hidden:
 
 Provide labels (not QIDs) — the Wikidata search picks up labels.
 
-- chlorophyll a  *(Wikidata Q133878, confirmed resolves — chemical compound)*
-- water quality  *(Wikidata Q625376, confirmed resolves)*
-- estuary  *(Wikidata Q47053, confirmed resolves — marine and riverine ecosystem)*
-- Sentinel-2  *(Wikidata Q4302480, confirmed resolves — Earth observation satellite)*
-- atmospheric correction  *(Wikidata Q4817104, confirmed resolves — image-processing technique)*
+- chlorophyll a
+- water quality
+- estuary
+- Sentinel-2
+- atmospheric correction
 
 <!-- field: discipline -->
 ### Search discipline (Wikidata) (search/select, optional)
 
 Provide labels.
 
-- remote sensing  *(Wikidata Q199687, confirmed resolves — academic discipline)*
+- remote sensing
 
 ## Publication note
 
