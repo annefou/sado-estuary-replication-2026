@@ -84,6 +84,35 @@ jobs:
           BASE_URL: /${{ github.event.repository.name }}
         run: pixi run -e docs myst build --html
 
+      # The reader-facing story page rides the SAME Pages site as the book, served
+      # at /blog/. Best-effort: skipped (never fails the book deploy) if the key is
+      # absent. This is a dev-network replication, so the constellation + platform
+      # hosts are the dev ones; re-running this workflow regenerates the blog.
+      - name: Generate the reader-facing story page (best-effort)
+        if: steps.guard.outputs.ready == 'true'
+        continue-on-error: true
+        env:
+          SCIENCELIVE_API_KEY: ${{ secrets.SCIENCELIVE_API_KEY }}
+          SCIENCELIVE_API: https://api-dev.sciencelive4all.org/np/constellation
+          SCIENCELIVE_PLATFORM: https://platform-dev.sciencelive4all.org
+        run: |
+          if [ -n "$SCIENCELIVE_API_KEY" ]; then
+            pixi run -e docs build-story \
+              && echo "::notice::Story page rebuilt from the live network." \
+              || echo "::warning::build-story did not refresh the page — serving the committed blog/ instead."
+          else
+            echo "::notice::SCIENCELIVE_API_KEY not set — serving the committed blog/ if present."
+          fi
+          # Serve whatever blog/index.html exists (freshly built, or the committed
+          # snapshot) so a merge reliably shows the page even if CI could not rebuild it.
+          if [ -f blog/index.html ]; then
+            mkdir -p _build/html/blog
+            cp -r blog/. _build/html/blog/
+            echo "::notice::Story page included on the Pages site at /blog/."
+          else
+            echo "::warning::No blog/index.html — deploying the book without /blog/."
+          fi
+
       - name: Upload pages artifact
         if: steps.guard.outputs.ready == 'true'
         uses: actions/upload-pages-artifact@v5
